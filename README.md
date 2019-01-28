@@ -1,11 +1,12 @@
 # GoCrawl
 GoCrawl is a gopher powered web crawler for the internets! It exists largely as a learning tool for the author, it's only there second attempt at a Go app so be kind!
 
-<p align="center">
-  <img alt="Cute gopher holding a network cable" src="docs/network-gopher.png>
-</p>
+
+![Cute gopher holding a network cable](./docs/network-gopher.png)
 
 If you find anything useful in here, feel free to use this code as you wish (within the bounds of applicable laws and the terms of service of any website you choose to run this code against). 
+
+
 
 ## Project Structure
 In an attempt ot arrive at an idiomatic we have followed the (non-official but fairly popular) standards [found here](https://github.com/golang-standards/project-layout).
