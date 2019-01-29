@@ -6,9 +6,9 @@ import (
 	"sync"
 )
 
-type PageQueueWorker func(chan pages.Page, chan pages.Page, sync.WaitGroup)
+type PageQueueWorker func(chan pages.Page, chan pages.Page, *sync.WaitGroup)
 
-func PageCrawler(crawlQueue chan pages.Page, crawlResult chan pages.Page, wg sync.WaitGroup) {
+func PageCrawler(crawlQueue chan pages.Page, crawlResult chan pages.Page, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	for page := range crawlQueue {

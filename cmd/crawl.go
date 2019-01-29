@@ -18,5 +18,9 @@ func main(){
 		log.Panic(err)
 	}
 
-	crawl.FromUrl(*crawlUrl, crawl.PageCrawler, 1)
+	pages := crawl.FromUrl(*crawlUrl, crawl.PageCrawler, 1)
+
+	for _, page := range pages {
+		page.Print()
+	}
 }
