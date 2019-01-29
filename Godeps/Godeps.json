@@ -1,0 +1,18 @@
+{
+	"ImportPath": "github.com/jjmschofield/GoCrawl",
+	"GoVersion": "go1.11",
+	"GodepVersion": "v80",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "golang.org/x/net/html",
+			"Rev": "d26f9f9a57f3fab6a695bec0d84433c2c50f8bbf"
+		},
+		{
+			"ImportPath": "golang.org/x/net/html/atom",
+			"Rev": "d26f9f9a57f3fab6a695bec0d84433c2c50f8bbf"
+		}
+	]
+}
