@@ -1,7 +1,9 @@
 package crawl
 
 import (
+	"github.com/jjmschofield/GoCrawl/internal/app/links"
 	"github.com/jjmschofield/GoCrawl/internal/app/pages"
+	"log"
 	"net/url"
 	"sync"
 	"sync/atomic"
@@ -9,6 +11,9 @@ import (
 
 func FromUrl(startUrl url.URL, crawlWorker PageQueueWorker, nCrawlWorkers int) (crawledPages map[string]pages.Page) {
 	var wg sync.WaitGroup
+
+	linkQueue := make(chan links.Link)
+	var linkQueueLen int64
 
 	crawlQueue := make(chan pages.Page)
 	crawlResults := make(chan pages.Page)
@@ -30,10 +35,23 @@ func FromUrl(startUrl url.URL, crawlWorker PageQueueWorker, nCrawlWorkers int) (
 
 			atomic.AddInt64(&crawlQueueLen, -1)
 
-			if crawlQueueLen < 1 {
+			for _, link := range page.OutLinks.Internal {
+				atomic.AddInt64(&linkQueueLen, 1)
+				linkQueue <- link
+			}
+
+			if crawlQueueLen < 1 && linkQueueLen < 1 {
 				close(crawlQueue)
 				close(crawlResults)
+				close(linkQueue)
 			}
+		}
+	}()
+
+	go func() {
+		for link := range linkQueue {
+			log.Printf("%v", link)
+			atomic.AddInt64(&linkQueueLen, -1)
 		}
 	}()
 
