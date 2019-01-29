@@ -68,15 +68,39 @@ func (page *Page) AppendOutLink(link links.Link) []links.Link {
 	}
 }
 
-func normalizePageUrl(srcUrl url.URL) url.URL { //TODO - will this mutate?
-	srcUrl.Fragment = ""
-	srcUrl.RawQuery = ""
-	strings.TrimRight(srcUrl.RawPath, "/")
-	return srcUrl
-}
-
 func CalcPageId(srcUrl url.URL) (id string, normalizedUrl url.URL) {
 	normalizedUrl = normalizePageUrl(srcUrl)
 	id = md5.HashString(normalizedUrl.String())
 	return id, normalizedUrl
+}
+
+func (page *Page) Print() {
+	log.Printf("Page at %s with id %s", page.URL.String(), page.Id)
+	if page.Err != nil {
+		log.Printf("Page had error %s", page.Err)
+	}
+	log.Printf("Internal Links: %v", len(page.OutLinks.Internal))
+	printLinkSlice(page.OutLinks.Internal)
+	log.Printf("External Links: %v", len(page.OutLinks.External))
+	printLinkSlice(page.OutLinks.External)
+	log.Printf("Tel Links: %v", len(page.OutLinks.Tel))
+	printLinkSlice(page.OutLinks.Tel)
+	log.Printf("Mailto Links: %v", len(page.OutLinks.Mailto))
+	printLinkSlice(page.OutLinks.Mailto)
+}
+
+func normalizePageUrl(srcUrl url.URL) url.URL { //TODO - will this mutate?
+	srcUrl.Fragment = ""
+	srcUrl.RawQuery = ""
+	srcUrl.Path = strings.TrimRight(srcUrl.Path, "/")
+	srcUrl.RawPath = strings.TrimRight(srcUrl.RawPath, "/")
+	return srcUrl
+}
+
+func printLinkSlice(slice []links.Link) {
+	log.Printf("| Link Id | Link Type | Link From -> Link To | Link To Page Id |")
+	for _, link := range slice {
+		targetPageId, normalizedUrl := CalcPageId(link.ToURL)
+		log.Printf("| %s | %s | %s -> %s | %s(%s) |", link.Id, link.Type, link.FromURL.String(), link.ToURL.String(), targetPageId, normalizedUrl.String())
+	}
 }
