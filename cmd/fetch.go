@@ -28,11 +28,23 @@ func main(){
 	}
 
 	for _, link := range discoveredLinks {
-		page.OutLinks = append(page.OutLinks, link.Id)
+		page.AppendOutLink(link)
 	}
 
-	for _, linkId := range page.OutLinks {
-		toUrl :=  discoveredLinks[linkId].ToURL
-		log.Printf("Page id %s with url %s link id %s type %s to %s", page.Id, page.URL.String(), linkId, discoveredLinks[linkId].Type, toUrl.String())
+	log.Printf( "Page at %s with id %s", page.URL.String(), page.Id)
+	log.Printf( "Internal Links: %v", len(page.OutLinks.Internal))
+	printLinkSlice(page.OutLinks.Internal)
+	log.Printf( "External Links: %v", len(page.OutLinks.External))
+	printLinkSlice(page.OutLinks.External)
+	log.Printf( "Tel Links: %v", len(page.OutLinks.Tel))
+	printLinkSlice(page.OutLinks.Tel)
+	log.Printf( "Mailto Links: %v", len(page.OutLinks.Mailto))
+	printLinkSlice(page.OutLinks.Mailto)
+
+}
+
+func printLinkSlice(slice []links.Link){
+	for _, link := range slice {
+		log.Printf("- %s %s %s -> %s", link.Id, link.Type, link.FromURL.String(), link.ToURL.String())
 	}
 }
