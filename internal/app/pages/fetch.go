@@ -15,7 +15,7 @@ func FetchPageBody(targetUrl url.URL) (bodyReader io.ReadCloser, err error) {
 	response, err := http.Get(targetUrl.String())
 
 	if err != nil {
-		log.Printf("htmldocs get for %s failed %s", targetUrl.String(), err)
+		log.Printf("get for %s failed %s", targetUrl.String(), err)
 		return nil, err
 	}
 

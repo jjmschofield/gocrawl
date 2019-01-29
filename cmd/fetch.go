@@ -20,12 +20,14 @@ func main(){
 	}
 
 	page := pages.PageFromUrl(*crawlUrl)
+
 	hrefs, err := page.FetchHrefs(pages.FetchPageBody, pages.ReadHrefs)
-	discoveredLinks := links.FromHrefs(page.URL, hrefs)
 
 	if err != nil{
 		log.Panic(err)
 	}
+
+	discoveredLinks := links.FromHrefs(page.URL, hrefs)
 
 	for _, link := range discoveredLinks {
 		page.AppendOutLink(link)
