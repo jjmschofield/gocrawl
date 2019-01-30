@@ -21,7 +21,7 @@ func calcType(fromUrl url.URL, toUrl url.URL) LinkType {
 		return MailtoType
 	}
 
-	if toUrl.Host == fromUrl.Host {
+	if toUrl.Host == fromUrl.Host && toUrl.Scheme == fromUrl.Scheme {
 		return InternalPageType
 	} else {
 		return ExternalPagType

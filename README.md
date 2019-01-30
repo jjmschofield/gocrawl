@@ -67,12 +67,13 @@ We won't make an effort to put this into a suitably deployable format, but this 
 * **OS**: Windows 10
 
 ### First Attempt
-
+First we are going to do a spread of worker counts to asses if our concurrency model is working. We aren't going to take averages yet - so the numbers may spike.
 
 | Site  | Pages | 1 Worker | 10 Workers | 25 Workers  | 50 Workers | 100 Workers | 1000 Workers | 10000 Workers |
 |---|---|---|---|---|---|---|---|---|
-| https://monzo.com | 1351 | 747346ms  | 90327ms | 36993ms |  21567ms | 17062ms  | 16335ms  | 18041ms |
+| https://www.magicleap.com | 109 | 2167ms  | 712ms | 830ms |  576ms | 469ms  | 525ms  | 761ms |
 | https://www.akqa.com | 417 | 27348ms  | 2722ms | 2476ms  | 2603ms  | 2405ms   | 1674ms  | 2521ms |
+| https://monzo.com | 1351 | 747346ms  | 90327ms | 36993ms |  21567ms | 17062ms  | 16335ms  | 18041ms |
 
 So we definitely have parallel operations taking place and getting some benefits from them!
 
@@ -98,10 +99,24 @@ So some observations:
     * The use of caches and streaming results to storage (rather then hanging on to them) should clear this up
     * We could probably be more efficient with memory we are using by keeping only what we need
 
-So, some things to try :
-* Do less work
-  * We are currently treating both http and https for the host as being internal links, [sitemaps.org](https://www.sitemaps.org/protocol.html) tells us this is not right 
-  * We are currently following urls which are not html pages at all (eg pdf's, png's and other common file types), these will probably never give us a `text/http` response so why try?
+#### Do less work
+##### Only treat pages on the same protocol as internal
+We are currently treating both http and https for the host as being internal links, [sitemaps.org](https://www.sitemaps.org/protocol.html) tells us this is not right.
+ 
+| Site  | Pages | 1000 Workers Run 1 | 1000 Workers Run 2 | 1000 Workers Run 3 | 1000 Workers Avg | Page Count | Performance Change | 
+|---|---|---|---|---|---|---|---|
+| https://www.magicleap.com | 109 | 526ms | 635ms | 509ms | 556ms | 0 (0%) | +31ms (+0.06%) |   
+| https://www.akqa.com | 177 | 928ms | 1078ms | 938ms | 981ms | -294 (-70%) | -693ms (-41%) |
+| https://monzo.com | 688 | 14334ms  | 14341ms | 12684ms | 13786ms | -663 (-49)%  | -2549ms (-16%) | 
+ 
+How exciting! Interestingly two of the sites had a large number of mixed links, not so surprisingly crawling less pages dramatically reduced time. 
+
+##### Avoid chasing files
+We are currently following urls which are not html pages at all (eg pdf's, png's and other common file types), these will probably never give us a `text/http` response so why try?
+
+
+
+#### Others
 * Store less things
   * We have some pretty big data structures filling up memory
   * We could probably get away with reducing the amount of things we are tracking and being a bit and still hit our brief
