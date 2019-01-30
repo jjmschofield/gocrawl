@@ -59,6 +59,73 @@ We have many options here, dumping it to console, putting it into a JSON file, c
 ### Deployments
 We won't make an effort to put this into a suitably deployable format, but this might make quite a fun extension in the future if we want to index all the things! 
 
+## Benchmarks
+* **CPU:** i5-9600K (6 cores) @ ~4.3ghz
+* **Mem:** 16GB DDR4 @ 2666ghz
+* **Network:** ~80Mbps
+* **Disk**: Samsung EVO SSD
+* **OS**: Windows 10
+
+### First Attempt
+
+
+| Site  | Pages | 1 Worker | 10 Workers | 25 Workers  | 50 Workers | 100 Workers | 1000 Workers | 10000 Workers |
+|---|---|---|---|---|---|---|---|---|
+| https://monzo.com | 1351 | 747346ms  | 90327ms | 36993ms |  21567ms | 17062ms  | 16335ms  | 18041ms |
+| https://www.akqa.com | 417 | 27348ms  | 2722ms | 2476ms  | 2603ms  | 2405ms   | 1674ms  | 2521ms |
+
+So we definitely have parallel operations taking place and getting some benefits from them!
+
+Entertainingly our crawls seem to be limited more by the number of urls we have discovered then anything else. For example when we hit empty pages like http://monzo.com/blog/authors/kate-hollowood/11 we seem to only discover one link each time (the next link) - which means that we only end up using a couple of workers in parallel 
+
+To get some real performance insights we need to really stress the solution. When we crawl a big complex site like https://www.bbc.co.uk we get some interesting results:
+
+* CPU sits around 30% utilization
+* Memory eventually gets exceeded and the system starts paging
+* Bandwidth sits constantly at 75Mbps - 80Mbps
+
+Now this is more like the data that we need! 
+
+### Optimizations
+So some observations:
+
+* Bandwidth is our key limiting factor when we encounter a big site that responds quickly - excellent news!
+* For small sites - we hit a point where the number of parallel workers doesn't matter so much, or worse degrades performance due to resource allocation times 
+* We are blowing up memory
+    * This is largely because we are storing everything in memory and not streaming out our results
+    * Paging doesn't seem to hurt us (CPU doesn't go through the roof) - but then we are using a physically attached SSD
+    * This will cause problems on a VM where memory is more expensive and page file may not be available
+    * The use of caches and streaming results to storage (rather then hanging on to them) should clear this up
+    * We could probably be more efficient with memory we are using by keeping only what we need
+
+So, some things to try :
+* Do less work
+  * We are currently treating both http and https for the host as being internal links, [sitemaps.org](https://www.sitemaps.org/protocol.html) tells us this is not right 
+  * We are currently following urls which are not html pages at all (eg pdf's, png's and other common file types), these will probably never give us a `text/http` response so why try?
+* Store less things
+  * We have some pretty big data structures filling up memory
+  * We could probably get away with reducing the amount of things we are tracking and being a bit and still hit our brief
+* Stream our results somewhere
+  * We are hanging onto all of our results for a big bang tada moment at the end
+  * Easy to implement but with really big sites (or if we followed external links) we would eventually exhaust every resource available to us
+  * Dumping the results somewhere would probably free up memory really quickly      
+* Preload urls
+  * If we could get a head start on the pages of a site we could improve how much concurrent work we have on small sites
+  * It's almost like this is what sitemaps were invented for...
+  * Given the brief this is probably cheating (why not just return the sitemap and goto the pub?)
+* Are our log statements blocking?
+    * At high concurrency our logs to stdout are actually impacting performance quite noticeably
+    * Maybe we could stream the log statements in a non-blocking way or make use of a logging library to reduce the impact of this?
+* Could we be keeping goroutines spinning longer then needed?
+  * We aren't currently buffering channels, and work around the our circular structure can cause by spinning up a gorouting to push to the channel as soon as it can
+  * What kind of impact does this have (it sounds bad)? 
+  * Maybe buffering our channels will allow these goroutines to exit and have some impact?
+
+
+
+
+
+
 
 ## Thanks to
 [Renee French](http://reneefrench.blogspot.com/) for the wonderful gopher icon from [this github repo]( https://github.com/egonelbre/gophers ).
