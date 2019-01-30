@@ -53,7 +53,7 @@ func (page *Page) AppendOutLink(link links.Link) []links.Link {
 	case link.Type == links.InternalPageType:
 		page.OutLinks.Internal = append(page.OutLinks.Internal, link)
 		return page.OutLinks.Internal
-	case link.Type == links.ExternalPagType:
+	case link.Type == links.ExternalPageType:
 		page.OutLinks.External = append(page.OutLinks.External, link)
 		return page.OutLinks.Internal
 	case link.Type == links.MailtoType:

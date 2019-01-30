@@ -102,6 +102,10 @@ So some observations:
 #### Do less work
 ##### Only treat pages on the same protocol as internal
 We are currently treating both http and https for the host as being internal links, [sitemaps.org](https://www.sitemaps.org/protocol.html) tells us this is not right.
+
+We can see a ton of what looks like duplicated pages for several of the sites under test so we can safely assume we should see an improvement if we do this.  
+
+What happens when we did this?
  
 | Site  | Pages | 1000 Workers Run 1 | 1000 Workers Run 2 | 1000 Workers Run 3 | 1000 Workers Avg | Page Count | Performance Change | 
 |---|---|---|---|---|---|---|---|
@@ -109,21 +113,49 @@ We are currently treating both http and https for the host as being internal lin
 | https://www.akqa.com | 177 | 928ms | 1078ms | 938ms | 981ms | -294 (-70%) | -693ms (-41%) |
 | https://monzo.com | 688 | 14334ms  | 14341ms | 12684ms | 13786ms | -663 (-49)%  | -2549ms (-16%) | 
  
-How exciting! Interestingly two of the sites had a large number of mixed links, not so surprisingly crawling less pages dramatically reduced time. 
+How exciting! Interestingly two of the sites had a large number of mixed links, not so surprisingly crawling less pages dramatically reduced time.
+
+We may also orphan some pages if the site is badly linked together sadly - but them's the breaks. Really no-one should be linking to http, and we can probably quickly use the results from the crawler to discover and quickly fix the naughty pages.
 
 ##### Avoid chasing files
-We are currently following urls which are not html pages at all (eg pdf's, png's and other common file types), these will probably never give us a `text/http` response so why try?
+We are currently following urls which are not html pages at all (eg pdf's, png's and other common file types), these will probably never give us a `text/http` response so why try? 
 
+Anyways, we can see an error being printed to screen whenever we encounter one of these non-html entities and we are incorrectly treating them as broken pages. It's probably a bug so lets just fix it and see what happens.
 
+What happened when we did this?
+
+Of the sites under test, only Monzo had any noticeable change from the number of pages crawled with -13, https://www.akqa.com had 0 and https://www.magicleap.com had 1. Crawl times in all cases appear to have not really noticed the impact.
+
+In order to understand the benefits of this we should take a look at a site which has a large number of download links. https://www.cas.org.uk have many reports offered up as pdf - so it would seem like an excellent choice. 
+ 
+So first a benchmark without the file filter:
+ 
+| Site  | Pages | 1000 Workers Run 1 | 1000 Workers Run 2 | 1000 Workers Run 3 | 1000 Workers Avg |  
+|---|---|---|---|---|---|
+| https://www.cas.org.uk | 1,329 | 40,512ms | 42,160ms | 37,021ms | 39,897ms |
+
+And when we apply the filter:
+
+| Site  | Pages | 1000 Workers Run 1 | 1000 Workers Run 2 | 1000 Workers Run 3 | 1000 Workers Avg |  
+|---|---|---|---|---|---|
+| https://www.cas.org.uk | 520 | 1398ms | 1413ms | 1389ms | 1430ms |
+
+Wow! The difference for download heavy sites is staggering 61% less "pages" to crawl resulting in a 96% less crawl time.
+
+![Dancing gopher](./docs/gopher-dance-long-3x.gif)
+
+What's the fun of working in Go if you can't break out an animated gopher when things go well?
 
 #### Others
+* Do less work
+  * Pay attention to robot.txt
 * Store less things
   * We have some pretty big data structures filling up memory
   * We could probably get away with reducing the amount of things we are tracking and being a bit and still hit our brief
 * Stream our results somewhere
   * We are hanging onto all of our results for a big bang tada moment at the end
   * Easy to implement but with really big sites (or if we followed external links) we would eventually exhaust every resource available to us
-  * Dumping the results somewhere would probably free up memory really quickly      
+  * Dumping the results somewhere would probably free up memory really quickly        
 * Preload urls
   * If we could get a head start on the pages of a site we could improve how much concurrent work we have on small sites
   * It's almost like this is what sitemaps were invented for...
@@ -135,12 +167,6 @@ We are currently following urls which are not html pages at all (eg pdf's, png's
   * We aren't currently buffering channels, and work around the our circular structure can cause by spinning up a gorouting to push to the channel as soon as it can
   * What kind of impact does this have (it sounds bad)? 
   * Maybe buffering our channels will allow these goroutines to exit and have some impact?
-
-
-
-
-
-
 
 ## Thanks to
 [Renee French](http://reneefrench.blogspot.com/) for the wonderful gopher icon from [this github repo]( https://github.com/egonelbre/gophers ).
