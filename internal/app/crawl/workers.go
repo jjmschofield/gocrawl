@@ -3,32 +3,46 @@ package crawl
 import (
 	"github.com/jjmschofield/GoCrawl/internal/app/links"
 	"github.com/jjmschofield/GoCrawl/internal/app/pages"
+	"log"
 	"sync"
 )
 
-type PageQueueWorker func(chan pages.Page, chan pages.Page, *sync.WaitGroup)
+type PageQueueWorker func(chan pages.Page, chan PageCrawlResult, *sync.WaitGroup)
 
-func PageCrawler(crawlQueue chan pages.Page, crawlResult chan pages.Page, wg *sync.WaitGroup) {
+type PageCrawlResult struct {
+	crawledPage pages.Page
+	discoveredPages map[string]pages.Page
+}
+
+func PageCrawler(crawlQueue chan pages.Page, crawlResult chan PageCrawlResult, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	for page := range crawlQueue {
-		//log.Printf("crawl queue got %s", page.Id)
-
 		hrefs, err := page.FetchHrefs(pages.FetchPageBody, pages.ReadHrefs)
 
+		result := PageCrawlResult{
+			crawledPage : page,
+			discoveredPages: make(map[string]pages.Page),
+		}
+
 		if err != nil {
-			page.Err = err
-			crawlResult <- page
+			result.crawledPage.Err = err
+			log.Printf("error getting page %s %s %v",page.Id, page.URL.String(), err)
+			crawlResult <- result
 		}
 
 		discoveredLinks := links.FromHrefs(page.URL, hrefs)
 
 		for _, link := range discoveredLinks {
-			page.AppendOutLink(link)
+			if link.Type == links.InternalPageType {
+				discoveredPage := pages.PageFromUrl(link.ToURL)
+				result.crawledPage.AppendOutInternalPage(discoveredPage)
+				result.discoveredPages[discoveredPage.Id] = discoveredPage
+			}
+
+			result.crawledPage.AppendOutLink(link)
 		}
 
-		crawlResult <- page
-
-		//log.Printf("crawl queue sent %s", page.Id)
+		crawlResult <- result
 	}
 }

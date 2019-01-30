@@ -142,13 +142,30 @@ And when we apply the filter:
 
 Wow! The difference for download heavy sites is staggering 61% less "pages" to crawl resulting in a 96% less crawl time.
 
+TODO 
+Noticed cas sites cache goes cold quick- maybe the benchmark is not quite as good as I thought (how slow is that site without the cache!)
+
 ![Dancing gopher](./docs/gopher-dance-long-3x.gif)
 
 What's the fun of working in Go if you can't break out an animated gopher when things go well?
 
+#### Store less things
+##### Can we reduce memory usage by structuring things a bit better?
+TODO
+* Stopped hanging onto big link structures for any longer then nesc by adding only the raw url to outlinks on pages
+* Added id for outpages
+* Carried out page construction in worker so main thread doesn't get concerned with it
+* Refactored a race condition (accessing a non locked var outside of a go routine) in eneque system
+
+Akqa site seems to be super quick now 475ms - real or just the time of night? Doubt it would make a diff for a small site. 
+
+Other sites not impacted.
+
+Need to work out a way to bench this against a huge site using a profiling tool.
+
 #### Other Optimizations
 ##### Is our approach to queuing work holding us back?
-We aren't currently buffering channels, and work around the our circular structure can cause by spinning up a gorouting to push to the channel as soon as it can.
+We aren't currently buffering channels, and work around the our circular structure can cause by spinning up a goroutine to push to the channel as soon as it can.
 
 What kind of impact does this have? It sounds bad but does it have an impact?  
 
@@ -161,8 +178,7 @@ None of the sites under test seemed to crawl more quickly when we added a buffer
 #### Others
 * Do less work
   * Pay attention to robot.txt
-* Store less things
-  * We have some pretty big data structures filling up memory
+* Store less things  
   * We could probably get away with reducing the amount of things we are tracking and being a bit and still hit our brief
 * Stream our results somewhere
   * We are hanging onto all of our results for a big bang tada moment at the end

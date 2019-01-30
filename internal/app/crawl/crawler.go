@@ -12,13 +12,10 @@ func FromUrl(startUrl url.URL, crawlWorker PageQueueWorker, nCrawlWorkers int) (
 	var wg sync.WaitGroup
 
 	crawlQueue := make(chan pages.Page, nCrawlWorkers)
-	crawlResults := make(chan pages.Page, nCrawlWorkers)
+	crawlResults := make(chan PageCrawlResult, nCrawlWorkers)
 
-	inProgress := make(map[string]pages.Page)
-	var inProgressMutex sync.Mutex
-
+	inProgress := make(map[string]interface{})
 	crawled := make(map[string]pages.Page)
-	var crawledMutex sync.Mutex
 
 	for i := 0; i < nCrawlWorkers; i++ {
 		wg.Add(1)
@@ -26,32 +23,21 @@ func FromUrl(startUrl url.URL, crawlWorker PageQueueWorker, nCrawlWorkers int) (
 	}
 
 	go func() {
-		for page := range crawlResults {
-			crawledMutex.Lock()
-			crawled[page.Id] = page
-			crawledMutex.Unlock()
+		for crawlResult := range crawlResults {
+			crawled[crawlResult.crawledPage.Id] = crawlResult.crawledPage
+			delete(inProgress, crawlResult.crawledPage.Id)
 
-			inProgressMutex.Lock()
-			delete(inProgress, page.Id)
-
-			for _, link := range page.OutLinks.Internal {
-				newPage := pages.PageFromUrl(link.ToURL)
-
-				_, hasBeenCrawled := crawled[newPage.Id]
-				_, isQueued := inProgress[newPage.Id]
+			for _, discoveredPage := range crawlResult.discoveredPages {
+				_, hasBeenCrawled := crawled[discoveredPage.Id]
+				_, isQueued := inProgress[discoveredPage.Id]
 
 				if !hasBeenCrawled && !isQueued {
-
-					inProgress[newPage.Id] = newPage
-
-					go func() {
-						crawlQueue <- newPage
-					}()
+					inProgress[discoveredPage.Id] = nil
+					go enqueuePage(discoveredPage, crawlQueue)
 				}
 			}
-			inProgressMutex.Unlock()
 
-			log.Printf("page crawled %s In Progress: %v, Complete: %v", page.URL.String(), len(inProgress), len(crawled))
+			log.Printf("page crawled %s %s In Progress: %v, Complete: %v", crawlResult.crawledPage.URL.String(), crawlResult.crawledPage.Id, len(inProgress), len(crawled))
 
 			if len(inProgress) < 1 {
 				close(crawlQueue)
@@ -60,9 +46,13 @@ func FromUrl(startUrl url.URL, crawlWorker PageQueueWorker, nCrawlWorkers int) (
 		}
 	}()
 
-	crawlQueue <- pages.PageFromUrl(startUrl) // TODO - find a way to split this into nice enqueue / producer functions to make the code sane
+	go enqueuePage(pages.PageFromUrl(startUrl), crawlQueue)
 
 	wg.Wait()
 
 	return crawled
+}
+
+func enqueuePage(page pages.Page, queue chan pages.Page){
+	queue <- page
 }
