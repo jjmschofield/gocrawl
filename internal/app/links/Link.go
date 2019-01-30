@@ -14,16 +14,19 @@ type Link struct {
 }
 
 func NewAbsLink(fromUrl url.URL, toUrl url.URL) Link { // TODO - needs to be normalized to exclude query params
+	var absToUrl url.URL
+
 	if !toUrl.IsAbs() {
-		toUrl.Scheme = fromUrl.Scheme
-		toUrl.Host = fromUrl.Host
+		absToUrl = *fromUrl.ResolveReference(&toUrl)
+	} else {
+		absToUrl = toUrl
 	}
 
 	return Link{
 		Id:      md5.HashString(fromUrl.String() + toUrl.String()),
-		ToURL:   toUrl,
+		ToURL:   absToUrl,
 		FromURL: fromUrl,
-		Type: calcType(fromUrl, toUrl),
+		Type:    calcType(fromUrl, absToUrl),
 	}
 }
 

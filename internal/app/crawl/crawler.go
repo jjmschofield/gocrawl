@@ -1,23 +1,21 @@
 package crawl
 
 import (
-	"github.com/jjmschofield/GoCrawl/internal/app/links"
 	"github.com/jjmschofield/GoCrawl/internal/app/pages"
 	"log"
 	"net/url"
 	"sync"
-	"sync/atomic"
 )
 
+// TODO - when we encounter pages with few links we loose the benefit of concurrency eg http://monzo.com/blog/authors/kate-hollowood/11
 func FromUrl(startUrl url.URL, crawlWorker PageQueueWorker, nCrawlWorkers int) (crawledPages map[string]pages.Page) {
 	var wg sync.WaitGroup
 
-	linkQueue := make(chan links.Link)
-	var linkQueueLen int64
-
 	crawlQueue := make(chan pages.Page)
 	crawlResults := make(chan pages.Page)
-	var crawlQueueLen int64
+
+	inProgress := make(map[string]pages.Page)
+	var inProgressMutex sync.Mutex
 
 	crawled := make(map[string]pages.Page)
 	var crawledMutex sync.Mutex
@@ -33,30 +31,36 @@ func FromUrl(startUrl url.URL, crawlWorker PageQueueWorker, nCrawlWorkers int) (
 			crawled[page.Id] = page
 			crawledMutex.Unlock()
 
-			atomic.AddInt64(&crawlQueueLen, -1)
+			inProgressMutex.Lock()
+			delete(inProgress, page.Id)
 
 			for _, link := range page.OutLinks.Internal {
-				atomic.AddInt64(&linkQueueLen, 1)
-				linkQueue <- link
-			}
+				newPage := pages.PageFromUrl(link.ToURL)
 
-			if crawlQueueLen < 1 && linkQueueLen < 1 {
+				_, hasBeenCrawled := crawled[newPage.Id]
+				_, isQueued := inProgress[newPage.Id]
+
+				if !hasBeenCrawled && !isQueued {
+
+					inProgress[newPage.Id] = newPage
+
+					go func() {
+						crawlQueue <- newPage
+					}()
+				}
+			}
+			inProgressMutex.Unlock()
+
+			log.Printf("page crawled %s In Progress: %v, Complete: %v", page.URL.String(), len(inProgress), len(crawled))
+
+			if len(inProgress) < 1{
 				close(crawlQueue)
 				close(crawlResults)
-				close(linkQueue)
 			}
 		}
 	}()
-
-	go func() {
-		for link := range linkQueue {
-			log.Printf("%v", link)
-			atomic.AddInt64(&linkQueueLen, -1)
-		}
-	}()
-
-	atomic.AddInt64(&crawlQueueLen, 1)
-	crawlQueue <- pages.PageFromUrl(startUrl)
+	
+	crawlQueue <- pages.PageFromUrl(startUrl) // TODO - find a way to split this into nice enqueue / producer functions to make the code sane
 
 	wg.Wait()
 

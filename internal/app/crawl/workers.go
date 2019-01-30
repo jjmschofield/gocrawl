@@ -12,6 +12,8 @@ func PageCrawler(crawlQueue chan pages.Page, crawlResult chan pages.Page, wg *sy
 	defer wg.Done()
 
 	for page := range crawlQueue {
+		//log.Printf("crawl queue got %s", page.Id)
+
 		hrefs, err := page.FetchHrefs(pages.FetchPageBody, pages.ReadHrefs)
 
 		if err != nil {
@@ -26,5 +28,7 @@ func PageCrawler(crawlQueue chan pages.Page, crawlResult chan pages.Page, wg *sy
 		}
 
 		crawlResult <- page
+
+		//log.Printf("crawl queue sent %s", page.Id)
 	}
 }
