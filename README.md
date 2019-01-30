@@ -146,6 +146,18 @@ Wow! The difference for download heavy sites is staggering 61% less "pages" to c
 
 What's the fun of working in Go if you can't break out an animated gopher when things go well?
 
+#### Other Optimizations
+##### Is our approach to queuing work holding us back?
+We aren't currently buffering channels, and work around the our circular structure can cause by spinning up a gorouting to push to the channel as soon as it can.
+
+What kind of impact does this have? It sounds bad but does it have an impact?  
+
+It seems to me (maybe incorrectly) that we need to hang onto our pushing goroutines so that we don't deadlock or find a channel we can't push to because all the consumers are busy. Maybe if we used buffered channels we would be a bit more resource efficient though?
+
+What happened when we did this?
+
+None of the sites under test seemed to crawl more quickly when we added a buffer. We left it in because it seems nicer then keeping tons of goroutines waiting but the impact seems virtually non-existent. Maybe some deeper profiling would yield more conclusive results.
+
 #### Others
 * Do less work
   * Pay attention to robot.txt
@@ -163,10 +175,6 @@ What's the fun of working in Go if you can't break out an animated gopher when t
 * Are our log statements blocking?
     * At high concurrency our logs to stdout are actually impacting performance quite noticeably
     * Maybe we could stream the log statements in a non-blocking way or make use of a logging library to reduce the impact of this?
-* Could we be keeping goroutines spinning longer then needed?
-  * We aren't currently buffering channels, and work around the our circular structure can cause by spinning up a gorouting to push to the channel as soon as it can
-  * What kind of impact does this have (it sounds bad)? 
-  * Maybe buffering our channels will allow these goroutines to exit and have some impact?
 
 ## Thanks to
 [Renee French](http://reneefrench.blogspot.com/) for the wonderful gopher icon from [this github repo]( https://github.com/egonelbre/gophers ).

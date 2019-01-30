@@ -11,8 +11,8 @@ import (
 func FromUrl(startUrl url.URL, crawlWorker PageQueueWorker, nCrawlWorkers int) (crawledPages map[string]pages.Page) {
 	var wg sync.WaitGroup
 
-	crawlQueue := make(chan pages.Page)
-	crawlResults := make(chan pages.Page)
+	crawlQueue := make(chan pages.Page, nCrawlWorkers)
+	crawlResults := make(chan pages.Page, nCrawlWorkers)
 
 	inProgress := make(map[string]pages.Page)
 	var inProgressMutex sync.Mutex
@@ -53,13 +53,13 @@ func FromUrl(startUrl url.URL, crawlWorker PageQueueWorker, nCrawlWorkers int) (
 
 			log.Printf("page crawled %s In Progress: %v, Complete: %v", page.URL.String(), len(inProgress), len(crawled))
 
-			if len(inProgress) < 1{
+			if len(inProgress) < 1 {
 				close(crawlQueue)
 				close(crawlResults)
 			}
 		}
 	}()
-	
+
 	crawlQueue <- pages.PageFromUrl(startUrl) // TODO - find a way to split this into nice enqueue / producer functions to make the code sane
 
 	wg.Wait()
