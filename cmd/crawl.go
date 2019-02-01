@@ -39,7 +39,7 @@ func main() {
 
 	crawler := crawl.NewCrawler(crawl.PageCrawler, out, crawl.CrawlerConfig{CrawlWorkerCount: *workerCount})
 	counters := crawler.Crawl(*crawlUrl)
-
+	
 	wg.Wait()
 
 	end := time.Now()

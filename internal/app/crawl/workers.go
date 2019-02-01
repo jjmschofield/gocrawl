@@ -14,12 +14,12 @@ type PageCrawlResult struct {
 }
 
 // TODO - someone implementing this has too much responsibility to update counters?
-func PageCrawler(queue chan pages.Page, result chan PageCrawlResult, qCount *counters.AtomicInt64, queueCount *counters.AtomicInt64, wg *sync.WaitGroup) {
+func PageCrawler(queue chan pages.Page, result chan PageCrawlResult, qCount *counters.AtomicInt64, workCount *counters.AtomicInt64, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for page := range queue {
 		discovered := make(map[string]pages.Page)
 
-		queueCount.Add(1)
+		workCount.Add(1)
 		qCount.Sub(1)
 
 		_, err := page.FetchLinks(pages.FetchPageBody, pages.ReadHrefs)
@@ -38,6 +38,6 @@ func PageCrawler(queue chan pages.Page, result chan PageCrawlResult, qCount *cou
 			discovered: discovered,
 		}
 
-		queueCount.Sub(1)
+		workCount.Sub(1)
 	}
 }

@@ -49,7 +49,7 @@ func calcType(fromUrl url.URL, toUrl url.URL) LinkType {
 // By checking teach path for large number of extensions in a regex we seem to loose quite a bit of time at scale
 // Instead we qualify if the url has an extension first and then run test to check if the extension is blacklisted using a binary search
 func isFile(testUrl url.URL) bool {
-	extensionRegex := regexp.MustCompile("\\.[\\w]+$")
+	extensionRegex := regexp.MustCompile("\\.[\\w]+$") // .* at end of line
 	extension := extensionRegex.FindString(testUrl.Path)
 
 	if len(extension) < 1 {
@@ -58,7 +58,7 @@ func isFile(testUrl url.URL) bool {
 
 	extension = strings.TrimLeft(extension, ".")
 
-	fileExtIndex := sort.SearchStrings(fileExtensions, extension);
+	fileExtIndex := sort.SearchStrings(fileExtensions, extension)
 
 	if fileExtIndex < 0 {
 		return false

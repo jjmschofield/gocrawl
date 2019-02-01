@@ -12,9 +12,9 @@ import (
 type Crawler struct {
 	Config   CrawlerConfig
 	counters Counters
-	channels cChans
-	caches   cCaches
-	workers  cWorkers
+	channels channels
+	caches   lockingCaches
+	workers  workers
 	wg       sync.WaitGroup
 }
 
@@ -22,19 +22,19 @@ type CrawlerConfig struct {
 	CrawlWorkerCount int
 }
 
-type cWorkers struct {
+type workers struct {
 	crawl PageQueueWorker
 }
 
-type cChans struct {
-	crawlQueue  chan pages.Page
-	crawlResult chan PageCrawlResult
-	out         chan pages.Page
+type channels struct {
+	workerIn  chan pages.Page
+	workerOut chan PageCrawlResult
+	out       chan pages.Page
 }
 
-type cCaches struct {
-	processing caches.StrLocking
-	crawled    caches.StrLocking
+type lockingCaches struct {
+	processing caches.LockingStr
+	crawled    caches.LockingStr
 }
 
 type Counters struct {
@@ -48,16 +48,16 @@ type Counters struct {
 func NewCrawler(crawlWorker PageQueueWorker, out chan pages.Page, config CrawlerConfig) Crawler {
 	return Crawler{
 		Config: config,
-		channels: cChans{
-			crawlQueue:  make(chan pages.Page, config.CrawlWorkerCount),
-			crawlResult: make(chan PageCrawlResult, config.CrawlWorkerCount),
-			out:         out,
+		channels: channels{
+			workerIn:  make(chan pages.Page, config.CrawlWorkerCount),
+			workerOut: make(chan PageCrawlResult, config.CrawlWorkerCount),
+			out:       out,
 		},
-		caches: cCaches{
-			processing: caches.NewStrBlocking(),
-			crawled:    caches.NewStrBlocking(),
+		caches: lockingCaches{
+			processing: caches.NewLockingStr(),
+			crawled:    caches.NewLockingStr(),
 		},
-		workers: cWorkers{
+		workers: workers{
 			crawl: crawlWorker,
 		},
 	}
@@ -78,13 +78,7 @@ func (c *Crawler) Crawl(startUrl url.URL) Counters {
 func (c *Crawler) startWorkers() {
 	for i := 0; i < c.Config.CrawlWorkerCount; i++ {
 		c.wg.Add(1)
-		go c.workers.crawl(
-			c.channels.crawlQueue,
-			c.channels.crawlResult,
-			&c.counters.CrawlsQueued,
-			&c.counters.Crawling,
-			&c.wg,
-		)
+		go c.workers.crawl(c.channels.workerIn, c.channels.workerOut, &c.counters.CrawlsQueued, &c.counters.Crawling, &c.wg)
 	}
 }
 
@@ -96,7 +90,7 @@ func (c *Crawler) startResultWorker(){
 func (c *Crawler) crawlResultWorker() {
 	defer c.wg.Done()
 
-	for result := range c.channels.crawlResult {
+	for result := range c.channels.workerOut {
 		c.caches.crawled.Add(result.crawled.Id)
 		c.counters.CrawlComplete.Add(1)
 
@@ -118,14 +112,14 @@ func (c *Crawler) crawlResultWorker() {
 func (c *Crawler) enqueueCrawl(page pages.Page) {
 	c.counters.Discovered.Add(1)
 	c.counters.Processing.Add(1)
-	c.counters.CrawlsQueued.Add(1)
 
 	c.caches.processing.Add(page.Id)
 
 	c.wg.Add(1)
 	go func() {
 		defer c.wg.Done()
-		c.channels.crawlQueue <- page
+		c.counters.CrawlsQueued.Add(1)
+		c.channels.workerIn <- page
 	}()
 }
 
@@ -154,7 +148,7 @@ func (c *Crawler) hasWorkRemaining() bool {
 }
 
 func (c *Crawler) closeChannels() {
-	close(c.channels.crawlQueue)
-	close(c.channels.crawlResult)
+	close(c.channels.workerIn)
+	close(c.channels.workerOut)
 	close(c.channels.out)
 }
