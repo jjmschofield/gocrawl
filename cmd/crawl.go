@@ -2,28 +2,48 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/jjmschofield/GoCrawl/internal/app/crawl"
+	"github.com/jjmschofield/GoCrawl/internal/app/pages"
 	"log"
 	"net/url"
+	"sync"
 	"time"
 )
 
-func main(){
+func main() {
 	start := time.Now()
 
 	crawlUrlRaw := flag.String("url", "https://monzo.com", "an absolute url eg http://www.google.co.uk")
+	workerCount := flag.Int("workers", 10, "Number of crawl workers to run")
+	outFilePath := flag.String("file", "", "A file path to send results to, if not set will print to stdout")
 
 	flag.Parse()
 
 	crawlUrl, err := url.Parse(*crawlUrlRaw)
 
-	if err != nil{
+	if err != nil {
 		log.Panic(err)
 	}
 
-	pages := crawl.FromUrl(*crawlUrl, crawl.PageCrawler, 200)
+	var wg sync.WaitGroup
 
-	end:= time.Now()
+	out := make(chan pages.Page)
 
-	log.Printf("Complete and found %v pages in %v ms" , len(pages), (end.UnixNano() - start.UnixNano()) / int64(time.Millisecond))
+	if len(*outFilePath)  > 0 {
+		writer := crawl.FileWriter{FilePath: *outFilePath}
+		go writer.Write(out, &wg)
+	} else{
+		go crawl.StdoutWriter(out, &wg)
+	}
+
+	crawler := crawl.NewCrawler(crawl.PageCrawler, out, crawl.CrawlerConfig{CrawlWorkerCount: *workerCount})
+	counters := crawler.Crawl(*crawlUrl)
+
+	wg.Wait()
+
+	end := time.Now()
+
+	fmt.Printf("Crawl Completed in %v ms \n", (end.UnixNano()-start.UnixNano())/int64(time.Millisecond))
+	fmt.Printf(" Discovered: %v, \n Crawled: %v \n Parallel Crawls Peak: %v \n Crawl Queue Peak: %v \n Processing Peak: %v \n", counters.Discovered.Count(), counters.CrawlComplete.Count(), counters.Crawling.Peak(), counters.CrawlsQueued.Peak(), counters.Processing.Peak())
 }

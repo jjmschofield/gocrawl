@@ -1,34 +1,43 @@
 package crawl
 
 import (
-	"github.com/jjmschofield/GoCrawl/internal/app/links"
 	"github.com/jjmschofield/GoCrawl/internal/app/pages"
+	"github.com/jjmschofield/GoCrawl/internal/pkg/counters"
 	"sync"
 )
 
-type PageQueueWorker func(chan pages.Page, chan pages.Page, *sync.WaitGroup)
+type PageQueueWorker func(chan pages.Page, chan PageCrawlResult, *counters.AtomicInt64, *counters.AtomicInt64, *sync.WaitGroup)
 
-func PageCrawler(crawlQueue chan pages.Page, crawlResult chan pages.Page, wg *sync.WaitGroup) {
+type PageCrawlResult struct {
+	crawled    pages.Page
+	discovered map[string]pages.Page
+}
+
+// TODO - someone implementing this has too much responsibility to update counters?
+func PageCrawler(queue chan pages.Page, result chan PageCrawlResult, qCount *counters.AtomicInt64, queueCount *counters.AtomicInt64, wg *sync.WaitGroup) {
 	defer wg.Done()
+	for page := range queue {
+		discovered := make(map[string]pages.Page)
 
-	for page := range crawlQueue {
-		//log.Printf("crawl queue got %s", page.Id)
+		queueCount.Add(1)
+		qCount.Sub(1)
 
-		hrefs, err := page.FetchHrefs(pages.FetchPageBody, pages.ReadHrefs)
+		_, err := page.FetchLinks(pages.FetchPageBody, pages.ReadHrefs)
 
 		if err != nil {
 			page.Err = err
-			crawlResult <- page
+		} else {
+			for _, link := range page.OutLinks.Internal {
+				discoveredPage := pages.PageFromUrl(link.ToURL)
+				discovered[discoveredPage.Id] = discoveredPage
+			}
 		}
 
-		discoveredLinks := links.FromHrefs(page.URL, hrefs)
-
-		for _, link := range discoveredLinks {
-			page.AppendOutLink(link)
+		result <- PageCrawlResult{
+			crawled:    page,
+			discovered: discovered,
 		}
 
-		crawlResult <- page
-
-		//log.Printf("crawl queue sent %s", page.Id)
+		queueCount.Sub(1)
 	}
 }

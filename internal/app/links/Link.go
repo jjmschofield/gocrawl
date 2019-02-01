@@ -1,16 +1,17 @@
 package links
 
 import (
+	"encoding/json"
 	"github.com/jjmschofield/GoCrawl/internal/pkg/md5"
 	"log"
 	"net/url"
 )
 
 type Link struct {
-	Id      string
-	ToURL   url.URL
-	FromURL url.URL
-	Type    LinkType
+	Id      string   `json:"id"`
+	ToURL   url.URL  `json:"url,string"`
+	FromURL url.URL  `json:"url,string"`
+	Type    LinkType `json:"type"`
 }
 
 func NewAbsLink(fromUrl url.URL, toUrl url.URL) Link { // TODO - needs to be normalized to exclude query params
@@ -55,4 +56,18 @@ func FromHrefs(pageUrl url.URL, hrefs []string) (links map[string]Link) {
 	}
 
 	return links
+}
+
+func (link Link) MarshalJSON() ([]byte, error) {
+	basicLink := struct {
+		Id  string `json:"id"`
+		ToURL string `json:"toUrl"`
+		FromUrl string `json:"fromUrl"`
+	}{
+		Id:  link.Id,
+		ToURL: link.ToURL.String(),
+		FromUrl: link.FromURL.String(),
+	}
+
+	return json.Marshal(basicLink)
 }

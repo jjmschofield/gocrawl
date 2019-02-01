@@ -1,6 +1,7 @@
 package pages
 
 import (
+	"encoding/json"
 	"github.com/jjmschofield/GoCrawl/internal/app/links"
 	"github.com/jjmschofield/GoCrawl/internal/pkg/md5"
 	"io"
@@ -41,11 +42,28 @@ func (page *Page) FetchHrefs(fetcher PageBodyFetcher, reader HrefReader) (hrefs 
 	bodyReader, err := page.FetchBody(fetcher)
 
 	if err != nil {
-		log.Printf("couldn't get html page for %s %v", page.Id, err)
+		log.Printf("couldn't get hrefs for page %s %v", page.Id, err)
 		return nil, err
 	}
 
 	return reader(bodyReader), nil
+}
+
+func (page *Page) FetchLinks(fetcher PageBodyFetcher, reader HrefReader) (fetchedLinks map[string]links.Link, err error) {
+	hrefs, err := page.FetchHrefs(fetcher, reader)
+
+	if err != nil {
+		log.Printf("couldn't get links page for %s %v", page.Id, err)
+		return nil, err
+	}
+
+	fetchedLinks = links.FromHrefs(page.URL, hrefs)
+
+	for _, link := range fetchedLinks {
+		page.AppendOutLink(link)
+	}
+
+	return fetchedLinks, nil
 }
 
 func (page *Page) AppendOutLink(link links.Link) []links.Link {
@@ -66,6 +84,22 @@ func (page *Page) AppendOutLink(link links.Link) []links.Link {
 		page.OutLinks.Unknown = append(page.OutLinks.Unknown, link)
 		return page.OutLinks.Internal
 	}
+}
+
+func (page Page) MarshalJSON() ([]byte, error) {
+	basicLink := struct {
+		Id  string `json:"id"`
+		URL string `json:"url"`
+		OutLinks PageOutLinks `json:"outLinks"`
+		Err error `json:"error"`
+	}{
+		Id:  page.Id,
+		URL: page.URL.String(),
+		OutLinks: page.OutLinks,
+		Err: page.Err,
+	}
+
+	return json.Marshal(basicLink)
 }
 
 func CalcPageId(srcUrl url.URL) (id string, normalizedUrl url.URL) {
@@ -91,7 +125,6 @@ func (page *Page) Print() {
 
 func normalizePageUrl(srcUrl url.URL) url.URL { //TODO - will this mutate?
 	srcUrl.Fragment = ""
-	srcUrl.RawQuery = ""
 	srcUrl.Path = strings.TrimRight(srcUrl.Path, "/")
 	srcUrl.RawPath = strings.TrimRight(srcUrl.RawPath, "/")
 	return srcUrl
