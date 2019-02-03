@@ -2,7 +2,7 @@ package crawl
 
 import (
 	"github.com/jjmschofield/GoCrawl/internal/app/pages"
-	"github.com/jjmschofield/GoCrawl/internal/pkg/counters"
+	"github.com/jjmschofield/GoCrawl/internal/app/counters"
 	"sync"
 )
 

@@ -1,7 +1,7 @@
 package pages
 
 import (
-	"github.com/jjmschofield/GoCrawl/internal/pkg/md5"
+	"github.com/jjmschofield/GoCrawl/internal/app/md5"
 	"net/url"
 	"strings"
 )

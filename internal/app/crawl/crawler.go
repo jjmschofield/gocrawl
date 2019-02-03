@@ -2,8 +2,8 @@ package crawl
 
 import (
 	"github.com/jjmschofield/GoCrawl/internal/app/pages"
-	"github.com/jjmschofield/GoCrawl/internal/pkg/caches"
-	"github.com/jjmschofield/GoCrawl/internal/pkg/counters"
+	"github.com/jjmschofield/GoCrawl/internal/app/caches"
+	"github.com/jjmschofield/GoCrawl/internal/app/counters"
 	"log"
 	"net/url"
 	"sync"
