@@ -10,7 +10,7 @@ import (
 )
 
 type Crawler struct {
-	Config   CrawlerConfig
+	Config   Config
 	counters Counters
 	channels channels
 	caches   lockingCaches
@@ -18,7 +18,7 @@ type Crawler struct {
 	wg       sync.WaitGroup
 }
 
-type CrawlerConfig struct {
+type Config struct {
 	CrawlWorkerCount int
 }
 
@@ -45,7 +45,7 @@ type Counters struct {
 	CrawlsQueued  counters.AtomicInt64
 }
 
-func NewCrawler(crawlWorker CrawlQueueWorker, out chan pages.Page, config CrawlerConfig) Crawler {
+func NewCrawler(crawlWorker CrawlQueueWorker, out chan pages.Page, config Config) Crawler {
 	return Crawler{
 		Config: config,
 		channels: channels{

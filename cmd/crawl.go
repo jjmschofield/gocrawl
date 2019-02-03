@@ -38,7 +38,7 @@ func main() {
 		go writers.StdoutWriter(out, &wg)
 	}
 
-	crawler := crawler.NewCrawler(crawler.CrawlWorker, out, crawler.CrawlerConfig{CrawlWorkerCount: *workerCount})
+	crawler := crawler.NewCrawler(crawler.CrawlWorker, out, crawler.Config{CrawlWorkerCount: *workerCount})
 	counters := crawler.Crawl(*crawlUrl)
 	
 	wg.Wait()
