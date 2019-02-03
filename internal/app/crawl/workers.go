@@ -1,7 +1,6 @@
 package crawl
 
 import (
-	"github.com/jjmschofield/GoCrawl/internal/app/links"
 	"github.com/jjmschofield/GoCrawl/internal/app/pages"
 	"github.com/jjmschofield/GoCrawl/internal/pkg/counters"
 	"sync"
@@ -12,29 +11,30 @@ type CrawlWorkerResult struct {
 	result  PageCrawlResult
 }
 
-type PageQueueWorker func(chan pages.Page, chan CrawlWorkerResult, *counters.AtomicInt64, *counters.AtomicInt64, *sync.WaitGroup)
+type CrawlQueueWorker func(chan pages.Page, chan CrawlWorkerResult, *counters.AtomicInt64, *counters.AtomicInt64, *sync.WaitGroup)
 
 // TODO - someone implementing this has too much responsibility to update counters?
-func PageCrawler(queue chan pages.Page, out chan CrawlWorkerResult, qCount *counters.AtomicInt64, workCount *counters.AtomicInt64, wg *sync.WaitGroup) {
+func CrawlWorker(queue chan pages.Page, out chan CrawlWorkerResult, qCount *counters.AtomicInt64, workCount *counters.AtomicInt64, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for page := range queue {
 		workCount.Add(1)
 		qCount.Sub(1)
 
-		result, err := Crawl(page.URL)
+		crawlResult, err := Crawl(page.URL)
+
+		workerResult := CrawlWorkerResult{
+			crawled: page,
+			result:  crawlResult,
+		}
 
 		if err != nil {
-			page.Err = err
+			workerResult.crawled.Err = err
+		} else {
+			workerResult.crawled.OutLinks = crawlResult.OutLinks
+			workerResult.crawled.OutPages = crawlResult.OutPages
 		}
 
-		page.OutLinks = links.ToLinkGroup(result.OutLinks)
-		page.OutPages = result.OutPages
-
-		out <- CrawlWorkerResult{
-			crawled: page,
-			result:  result,
-		}
-
+		out <- workerResult
 		workCount.Sub(1)
 	}
 }

@@ -1,16 +1,18 @@
 package links
 
+import "encoding/json"
+
 type LinkGroup struct {
-	Internal     []Link `json:"internal"`
-	InternalFile []Link `json:"internalFiles"`
-	External     []Link `json:"external"`
-	ExternalFile []Link `json:"externalFiles"`
-	Tel          []Link `json:"tel"`
-	Mailto       []Link `json:"mailto"`
-	Unknown      []Link `json:"unknown"`
+	Internal     []Link
+	InternalFile []Link
+	External     []Link
+	ExternalFile []Link
+	Tel          []Link
+	Mailto       []Link
+	Unknown      []Link
 }
 
-func ToLinkGroup(links []Link) (group LinkGroup){
+func ToLinkGroup(links []Link) (group LinkGroup) {
 	for _, link := range links {
 		switch {
 		case link.Type == InternalPageType:
@@ -31,4 +33,35 @@ func ToLinkGroup(links []Link) (group LinkGroup){
 	}
 
 	return group
+}
+
+func (group LinkGroup) MarshalJSON() ([]byte, error) {
+	basicGroup := struct {
+		Internal     []string `json:"internal"`
+		InternalFile []string `json:"internalFiles"`
+		External     []string `json:"external"`
+		ExternalFile []string `json:"externalFiles"`
+		Tel          []string `json:"tel"`
+		Mailto       []string `json:"mailto"`
+		Unknown      []string `json:"unknown"`
+	}{
+		Internal:     linksToIds(group.Internal),
+		InternalFile: linksToIds(group.InternalFile),
+		External:     linksToIds(group.External),
+		ExternalFile: linksToIds(group.ExternalFile),
+		Tel:          linksToIds(group.Tel),
+		Mailto:       linksToIds(group.Mailto),
+		Unknown:      linksToIds(group.Unknown),
+	}
+
+	return json.Marshal(basicGroup)
+}
+
+func linksToIds(links []Link) (ids []string) {
+	ids = make([]string, len(links))
+
+	for i, link := range links {
+		ids[i] = link.Id
+	}
+	return ids
 }

@@ -14,7 +14,7 @@ type Link struct {
 	Type    LinkType `json:"type"`
 }
 
-func NewAbsLink(fromUrl url.URL, toUrl url.URL) Link { // TODO - needs to be normalized to exclude query params
+func NewAbsLink(fromUrl url.URL, toUrl url.URL) Link {
 	var absToUrl url.URL
 
 	if !toUrl.IsAbs() {

@@ -10,7 +10,7 @@ import (
 
 type PageCrawlResult struct {
 	OutPages pages.PageGroup
-	OutLinks []links.Link
+	OutLinks links.LinkGroup
 }
 
 func Crawl(target url.URL) (result PageCrawlResult, err error) {
@@ -20,7 +20,7 @@ func Crawl(target url.URL) (result PageCrawlResult, err error) {
 		return PageCrawlResult{}, err
 	}
 
-	result.OutLinks = extractLinks(target, bodyReader)
+	result.OutLinks = links.ToLinkGroup(extractLinks(target, bodyReader))
 
 	result.OutPages = createPages(result.OutLinks)
 
@@ -33,13 +33,11 @@ func extractLinks(target url.URL, bodyReader io.ReadCloser) (extracted []links.L
 	return links.FromHrefs(target, hrefs)
 }
 
-func createPages(outLinks []links.Link) (group pages.PageGroup) {
+func createPages(outLinks links.LinkGroup) (group pages.PageGroup) {
 	var internal []pages.Page
 
-	for _, link := range outLinks {
-		if link.Type == links.InternalPageType {
-			internal = append(internal, pages.PageFromUrl(link.ToURL))
-		}
+	for _, link := range outLinks.Internal {
+		internal = append(internal, pages.PageFromUrl(link.ToURL))
 	}
 
 	return pages.ToPageGroup(internal)

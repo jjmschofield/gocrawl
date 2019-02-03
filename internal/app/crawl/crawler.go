@@ -23,7 +23,7 @@ type CrawlerConfig struct {
 }
 
 type workers struct {
-	crawl PageQueueWorker
+	crawl CrawlQueueWorker
 }
 
 type channels struct {
@@ -45,7 +45,7 @@ type Counters struct {
 	CrawlsQueued  counters.AtomicInt64
 }
 
-func NewCrawler(crawlWorker PageQueueWorker, out chan pages.Page, config CrawlerConfig) Crawler {
+func NewCrawler(crawlWorker CrawlQueueWorker, out chan pages.Page, config CrawlerConfig) Crawler {
 	return Crawler{
 		Config: config,
 		channels: channels{

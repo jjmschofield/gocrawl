@@ -25,7 +25,7 @@ func PageFromUrl(srcUrl url.URL) Page {
 }
 
 func (page Page) MarshalJSON() ([]byte, error) {
-	basicLink := struct {
+	basicPage := struct {
 		Id       string          `json:"id"`
 		URL      string          `json:"url"`
 		OutPages PageGroup		 `json:"outPages"`
@@ -34,11 +34,12 @@ func (page Page) MarshalJSON() ([]byte, error) {
 	}{
 		Id:       page.Id,
 		URL:      page.URL.String(),
+		OutPages: page.OutPages,
 		OutLinks: page.OutLinks,
 		Err:      page.Err,
 	}
 
-	return json.Marshal(basicLink)
+	return json.Marshal(basicPage)
 }
 
 func (page *Page) Print() {
