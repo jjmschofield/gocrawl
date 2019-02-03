@@ -1,4 +1,4 @@
-package pages
+package fetch
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 
 type PageBodyFetcher func(url.URL) (bodyReader io.ReadCloser, err error)
 
-func FetchPageBody(targetUrl url.URL) (bodyReader io.ReadCloser, err error) {
+func Body(targetUrl url.URL) (bodyReader io.ReadCloser, err error) {
 	response, err := http.Get(targetUrl.String())
 
 	if err != nil {

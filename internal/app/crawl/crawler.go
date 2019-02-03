@@ -28,7 +28,7 @@ type workers struct {
 
 type channels struct {
 	workerIn  chan pages.Page
-	workerOut chan PageCrawlResult
+	workerOut chan CrawlWorkerResult
 	out       chan pages.Page
 }
 
@@ -50,7 +50,7 @@ func NewCrawler(crawlWorker PageQueueWorker, out chan pages.Page, config Crawler
 		Config: config,
 		channels: channels{
 			workerIn:  make(chan pages.Page, config.CrawlWorkerCount),
-			workerOut: make(chan PageCrawlResult, config.CrawlWorkerCount),
+			workerOut: make(chan CrawlWorkerResult, config.CrawlWorkerCount),
 			out:       out,
 		},
 		caches: lockingCaches{
@@ -97,9 +97,9 @@ func (c *Crawler) crawlResultWorker() {
 		c.counters.Processing.Sub(1)
 		c.caches.processing.Remove(result.crawled.Id)
 
-		c.enqueueNewPages(result.discovered)
+		c.enqueueNewPages(result.result.OutPages.Internal)
 
-		log.Printf("page crawled %s Discovered: %v, Processing: %v, In Crawl Queue: %v, Crawling: %v, Crawl Complete: %v", result.crawled.URL.String(), c.counters.Discovered.Count(), c.counters.Processing.Count(), c.counters.CrawlsQueued.Count(), c.counters.Crawling.Count(), c.counters.CrawlComplete.Count())
+		log.Printf("crawled crawled %s Discovered: %v, Processing: %v, In Crawl Queue: %v, Crawling: %v, Crawl Complete: %v", result.crawled.URL.String(), c.counters.Discovered.Count(), c.counters.Processing.Count(), c.counters.CrawlsQueued.Count(), c.counters.Crawling.Count(), c.counters.CrawlComplete.Count())
 
 		c.channels.out <- result.crawled
 
@@ -123,9 +123,9 @@ func (c *Crawler) enqueueCrawl(page pages.Page) {
 	}()
 }
 
-func (c *Crawler) enqueueNewPages(pageMap map[string]pages.Page) {
-	for id, page := range pageMap {
-		if !c.caches.crawled.Has(id) && !c.caches.processing.Has(id) {
+func (c *Crawler) enqueueNewPages(pageMap []pages.Page) {
+	for _, page := range pageMap {
+		if !c.caches.crawled.Has(page.Id) && !c.caches.processing.Has(page.Id) {
 			c.enqueueCrawl(page)
 		}
 	}

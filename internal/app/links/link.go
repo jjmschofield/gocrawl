@@ -42,17 +42,15 @@ func FromHref(pageUrl url.URL, href string) (link Link, err error) {
 	return NewAbsLink(pageUrl, *toUrl), nil // TODO - will this mutate or is it de-referencing
 }
 
-func FromHrefs(pageUrl url.URL, hrefs []string) (links map[string]Link) {
-	links = make(map[string]Link)
-
+func FromHrefs(srcUrl url.URL, hrefs []string) (links []Link) {
 	for _, href := range hrefs {
-		link, err := FromHref(pageUrl, href)
+		link, err := FromHref(srcUrl, href)
 
 		if err != nil {
-			log.Printf("invalid url found %s on %s", href, pageUrl.String())
+			log.Printf("invalid url found %s on %s", href, srcUrl.String())
 		}
 
-		links[link.Id] = link
+		links = append(links, link)
 	}
 
 	return links
@@ -71,3 +69,4 @@ func (link Link) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(basicLink)
 }
+
