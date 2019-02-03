@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/jjmschofield/GoCrawl/internal/app/crawl"
+	"github.com/jjmschofield/GoCrawl/internal/app/crawler"
 	"github.com/jjmschofield/GoCrawl/internal/app/pages"
 	"github.com/jjmschofield/GoCrawl/internal/app/writers"
 	"log"
@@ -16,7 +16,7 @@ func main() {
 	start := time.Now()
 
 	crawlUrlRaw := flag.String("url", "https://monzo.com", "an absolute url eg http://www.google.co.uk")
-	workerCount := flag.Int("workers", 100, "Number of crawl workers to run")
+	workerCount := flag.Int("workers", 100, "Number of crawler workers to run")
 	outFilePath := flag.String("file", "", "A file path to send results to, if not set will print to stdout")
 
 	flag.Parse()
@@ -38,7 +38,7 @@ func main() {
 		go writers.StdoutWriter(out, &wg)
 	}
 
-	crawler := crawl.NewCrawler(crawl.CrawlWorker, out, crawl.CrawlerConfig{CrawlWorkerCount: *workerCount})
+	crawler := crawler.NewCrawler(crawler.CrawlWorker, out, crawler.CrawlerConfig{CrawlWorkerCount: *workerCount})
 	counters := crawler.Crawl(*crawlUrl)
 	
 	wg.Wait()

@@ -1,8 +1,8 @@
-package crawl
+package crawler
 
 import (
-	"github.com/jjmschofield/GoCrawl/internal/app/pages"
 	"github.com/jjmschofield/GoCrawl/internal/app/counters"
+	"github.com/jjmschofield/GoCrawl/internal/app/pages"
 	"sync"
 )
 
