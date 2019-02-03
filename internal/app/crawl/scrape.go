@@ -13,7 +13,7 @@ type PageCrawlResult struct {
 	OutLinks links.LinkGroup
 }
 
-func Crawl(target url.URL) (result PageCrawlResult, err error) {
+func Scrape(target url.URL) (result PageCrawlResult, err error) {
 	bodyReader, err := fetch.Body(target)
 
 	if err != nil {

@@ -20,7 +20,7 @@ func CrawlWorker(queue chan pages.Page, out chan CrawlWorkerResult, qCount *coun
 		workCount.Add(1)
 		qCount.Sub(1)
 
-		crawlResult, err := Crawl(page.URL)
+		crawlResult, err := Scrape(page.URL)
 
 		workerResult := CrawlWorkerResult{
 			crawled: page,

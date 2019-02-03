@@ -99,7 +99,7 @@ func (c *Crawler) crawlResultWorker() {
 
 		c.enqueueNewPages(result.result.OutPages.Internal)
 
-		log.Printf("crawled crawled %s Discovered: %v, Processing: %v, In Crawl Queue: %v, Crawling: %v, Crawl Complete: %v", result.crawled.URL.String(), c.counters.Discovered.Count(), c.counters.Processing.Count(), c.counters.CrawlsQueued.Count(), c.counters.Crawling.Count(), c.counters.CrawlComplete.Count())
+		log.Printf("crawled crawled %s Discovered: %v, Processing: %v, In Scrape Queue: %v, Crawling: %v, Scrape Complete: %v", result.crawled.URL.String(), c.counters.Discovered.Count(), c.counters.Processing.Count(), c.counters.CrawlsQueued.Count(), c.counters.Crawling.Count(), c.counters.CrawlComplete.Count())
 
 		c.channels.out <- result.crawled
 
