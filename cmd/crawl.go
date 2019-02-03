@@ -16,7 +16,7 @@ func main() {
 	start := time.Now()
 
 	crawlUrlRaw := flag.String("url", "https://monzo.com", "an absolute url eg http://www.google.co.uk")
-	workerCount := flag.Int("workers", 10, "Number of crawl workers to run")
+	workerCount := flag.Int("workers", 100, "Number of crawl workers to run")
 	outFilePath := flag.String("file", "", "A file path to send results to, if not set will print to stdout")
 
 	flag.Parse()
