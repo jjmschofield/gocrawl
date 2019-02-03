@@ -8,10 +8,10 @@ import (
 )
 
 type Link struct {
-	Id      string   `json:"id"`
-	ToURL   url.URL  `json:"url,string"`
-	FromURL url.URL  `json:"url,string"`
-	Type    LinkType `json:"type"`
+	Id      string  `json:"id"`
+	ToURL   url.URL `json:"url,string"`
+	FromURL url.URL `json:"url,string"`
+	Type    string  `json:"type"`
 }
 
 func NewAbsLink(fromUrl url.URL, toUrl url.URL) Link {
@@ -58,15 +58,16 @@ func FromHrefs(srcUrl url.URL, hrefs []string) (links []Link) {
 
 func (link Link) MarshalJSON() ([]byte, error) {
 	basicLink := struct {
-		Id  string `json:"id"`
-		ToURL string `json:"toUrl"`
+		Id      string `json:"id"`
+		ToURL   string `json:"toUrl"`
+		Type    string `json:"type"`
 		FromUrl string `json:"fromUrl"`
 	}{
-		Id:  link.Id,
-		ToURL: link.ToURL.String(),
+		Id:      link.Id,
+		ToURL:   link.ToURL.String(),
+		Type:    link.Type,
 		FromUrl: link.FromURL.String(),
 	}
 
 	return json.Marshal(basicLink)
 }
-

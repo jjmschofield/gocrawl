@@ -7,22 +7,20 @@ import (
 	"strings"
 )
 
-type LinkType string
-
 const (
-	InternalPageType LinkType = "internal"
-	InternalFileType LinkType = "internal_file"
-	ExternalPageType LinkType = "external"
-	ExternalFileType LinkType = "external_file"
-	TelType          LinkType = "tel"
-	MailtoType       LinkType = "mailto"
-	UnknownType      LinkType = "unknown"
+	InternalPageType string = "internal"
+	InternalFileType string = "internal_file"
+	ExternalPageType string = "external"
+	ExternalFileType string = "external_file"
+	TelType          string = "tel"
+	MailtoType       string = "mailto"
+	UnknownType      string = "unknown"
 )
 
 // This is a sorted array used in binary search, when adding values add them in alphabetically
 var fileExtensions = []string{"asx", "avi", "avi", "doc", "docx", "exe", "f4v", "flv", "gif", "jar", "jar", "jpeg", "jpg", "m1v", "mov", "mp2", "mp4", "mpeg", "mpg", "pdf", "png", "pps", "raw", "rss", "swf", "wav", "wma", "wmv", "xls", "xml", "xsd", "zip"}
 
-func calcType(fromUrl url.URL, toUrl url.URL) LinkType {
+func calcType(fromUrl url.URL, toUrl url.URL) string {
 	if toUrl.Scheme == "tel" {
 		return TelType
 	}

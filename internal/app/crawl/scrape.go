@@ -1,4 +1,4 @@
-package crawler
+package crawl
 
 import (
 	"github.com/jjmschofield/GoCrawl/internal/app/fetch"
