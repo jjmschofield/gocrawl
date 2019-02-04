@@ -13,21 +13,6 @@ import (
 
 type Writer func(in chan pages.Page, wg *sync.WaitGroup)
 
-func StdoutWriter(in chan pages.Page, wg *sync.WaitGroup) {
-	defer wg.Done()
-	wg.Add(1)
-
-	pageEncoder := json.NewEncoder(os.Stdout)
-
-	for page := range in {
-		err := pageEncoder.Encode(page)
-
-		if err != nil {
-			log.Panicln("Can't write entry!")
-		}
-	}
-}
-
 type FileWriter struct {
 	FilePath string
 }

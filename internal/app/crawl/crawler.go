@@ -94,12 +94,12 @@ func (c *Crawler) crawlResultWorker() {
 		c.caches.crawled.Add(result.crawled.Id)
 		c.counters.CrawlComplete.Add(1)
 
+		c.enqueueNewPages(result.result.OutPages.Internal)
+
 		c.counters.Processing.Sub(1)
 		c.caches.processing.Remove(result.crawled.Id)
 
-		c.enqueueNewPages(result.result.OutPages.Internal)
-
-		log.Printf("crawled crawled %s Discovered: %v, Processing: %v, In Scrape Queue: %v, Crawling: %v, Scrape Complete: %v", result.crawled.URL.String(), c.counters.Discovered.Count(), c.counters.Processing.Count(), c.counters.CrawlsQueued.Count(), c.counters.Crawling.Count(), c.counters.CrawlComplete.Count())
+		log.Printf("crawled %s Discovered: %v, Processing: %v, In Scrape Queue: %v, Scraping: %v, Scrape Complete: %v", result.crawled.URL.String(), c.counters.Discovered.Count(), c.counters.Processing.Count(), c.counters.CrawlsQueued.Count(), c.counters.Crawling.Count(), c.counters.CrawlComplete.Count())
 
 		c.channels.out <- result.crawled
 

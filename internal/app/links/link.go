@@ -39,7 +39,7 @@ func FromHref(pageUrl url.URL, href string) (link Link, err error) {
 		return Link{}, err
 	}
 
-	return NewAbsLink(pageUrl, *toUrl), nil // TODO - will this mutate or is it de-referencing
+	return NewAbsLink(pageUrl, *toUrl), nil
 }
 
 func FromHrefs(srcUrl url.URL, hrefs []string) (links []Link) {
@@ -48,9 +48,9 @@ func FromHrefs(srcUrl url.URL, hrefs []string) (links []Link) {
 
 		if err != nil {
 			log.Printf("invalid url found %s on %s", href, srcUrl.String())
+		} else{
+			links = append(links, link)
 		}
-
-		links = append(links, link)
 	}
 
 	return links

@@ -13,14 +13,6 @@ func NewLockingStr() LockingStr {
 	}
 }
 
-func (strCache *LockingStr) Has(str string) bool {
-	defer strCache.cacheMutex.Unlock()
-	strCache.cacheMutex.Lock()
-
-	_, hasKey := strCache.cache[str]
-	return hasKey
-}
-
 func (strCache *LockingStr) Add(str string) {
 	defer strCache.cacheMutex.Unlock()
 	strCache.cacheMutex.Lock()
@@ -33,6 +25,14 @@ func (strCache *LockingStr) Remove(str string) {
 	strCache.cacheMutex.Lock()
 
 	delete(strCache.cache, str)
+}
+
+func (strCache *LockingStr) Has(str string) bool {
+	defer strCache.cacheMutex.Unlock()
+	strCache.cacheMutex.Lock()
+
+	_, hasKey := strCache.cache[str]
+	return hasKey
 }
 
 func (strCache *LockingStr) Count() int {

@@ -19,6 +19,7 @@ const (
 
 // This is a sorted array used in binary search, when adding values add them in alphabetically
 var fileExtensions = []string{"asx", "avi", "avi", "doc", "docx", "exe", "f4v", "flv", "gif", "jar", "jar", "jpeg", "jpg", "m1v", "mov", "mp2", "mp4", "mpeg", "mpg", "pdf", "png", "pps", "raw", "rss", "swf", "wav", "wma", "wmv", "xls", "xml", "xsd", "zip"}
+//var fileExtensions = []string{"boo"}
 
 func calcType(fromUrl url.URL, toUrl url.URL) string {
 	if toUrl.Scheme == "tel" {
@@ -58,7 +59,8 @@ func isFile(testUrl url.URL) bool {
 
 	fileExtIndex := sort.SearchStrings(fileExtensions, extension)
 
-	if fileExtIndex < 0 {
+	// SearchStrings gives us an insert position - so we must test A) we are not out of range and B) we have not found the ext
+	if fileExtIndex == len(fileExtensions) || fileExtensions[fileExtIndex] != extension {
 		return false
 	}
 
