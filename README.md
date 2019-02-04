@@ -176,5 +176,18 @@ None of the sites under test seemed to crawl more quickly when we added a buffer
     * At high concurrency our logs to stdout are actually impacting performance quite noticeably
     * Maybe we could stream the log statements in a non-blocking way or make use of a logging library to reduce the impact of this?
 
+## Fail point
+bbc.co.uk
+
+Discovered: 2714777
+Processing: 1844070
+Crawled: 870707
+Crawl Queue: 1843066
+Out of mem
+
+Start: 2019/02/04 09:02:12
+End: 2019/02/04 11:42:28
+
 ## Thanks to
 [Renee French](http://reneefrench.blogspot.com/) for the wonderful gopher icon from [this github repo]( https://github.com/egonelbre/gophers ).
+
