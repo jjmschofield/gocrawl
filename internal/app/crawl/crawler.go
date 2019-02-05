@@ -13,13 +13,19 @@ type Crawler struct {
 	Config   Config
 	counters Counters
 	channels channels
-	caches   lockingCaches
+	caches   Caches
 	workers  workers
 	wg       sync.WaitGroup
 }
 
 type Config struct {
 	CrawlWorkerCount int
+	Caches           Caches
+}
+
+type Caches struct {
+	Processing caches.ThreadSafeCache
+	Crawled    caches.ThreadSafeCache
 }
 
 type workers struct {
@@ -30,11 +36,6 @@ type channels struct {
 	workerIn  chan WorkerJob
 	workerOut chan WorkerResult
 	out       chan pages.Page
-}
-
-type lockingCaches struct {
-	processing caches.StrThreadSafe
-	crawled    caches.StrThreadSafe
 }
 
 type Counters struct {
@@ -53,10 +54,7 @@ func NewCrawler(crawlWorker QueueWorker, out chan pages.Page, config Config) Cra
 			workerOut: make(chan WorkerResult),
 			out:       out,
 		},
-		caches: lockingCaches{
-			processing: caches.NewStrThreadSafe(),
-			crawled:    caches.NewStrThreadSafe(),
-		},
+		caches: config.Caches,
 		workers: workers{
 			crawl: crawlWorker,
 		},
@@ -91,17 +89,24 @@ func (c *Crawler) crawlResultWorker() {
 	defer c.wg.Done()
 
 	for result := range c.channels.workerOut {
-		c.caches.crawled.Add(result.crawled.Id)
+		c.caches.Crawled.Add(result.crawled.Id)
 		c.counters.CrawlComplete.Add(1)
 
 		c.enqueuePageGroup(result.result.OutPages)
 
-		c.counters.Processing.Sub(1)
-		c.caches.processing.Remove(result.crawled.Id)
-
-		log.Printf("crawled %s Discovered: %v, Processing: %v, In Scrape Queue: %v, Scraping: %v, Scrape Complete: %v", result.crawled.URL.String(), c.counters.Discovered.Count(), c.counters.Processing.Count(), c.counters.CrawlsQueued.Count(), c.counters.Crawling.Count(), c.counters.CrawlComplete.Count())
-
 		c.channels.out <- result.crawled
+
+		c.counters.Processing.Sub(1)
+		c.caches.Processing.Remove(result.crawled.Id)
+
+		log.Printf(
+			"Crawled %s Discovered: %v, Processing: %v, In Scrape Queue: %v, Scraping: %v, Scrape Complete: %v",
+			result.crawled.URL.String(),
+			c.counters.Discovered.Count(),
+			c.counters.Processing.Count(),
+			c.counters.CrawlsQueued.Count(),
+			c.counters.Crawling.Count(),
+			c.counters.CrawlComplete.Count())
 
 		if !c.hasWorkRemaining() {
 			c.closeChannels()
@@ -110,11 +115,11 @@ func (c *Crawler) crawlResultWorker() {
 }
 
 func (c *Crawler) enqueueJob(job WorkerJob) {
-	if !c.caches.crawled.Has(job.pageId) && !c.caches.processing.Has(job.pageId) {
+	if !c.caches.Crawled.Has(job.pageId) && !c.caches.Processing.Has(job.pageId) {
 		c.counters.Discovered.Add(1)
 		c.counters.Processing.Add(1)
 
-		c.caches.processing.Add(job.pageId)
+		c.caches.Processing.Add(job.pageId)
 
 		c.wg.Add(1)
 		go func() {
