@@ -1,23 +1,22 @@
-package crawl
+package scrape
 
 import (
-	"github.com/jjmschofield/GoCrawl/internal/app/fetch"
 	"github.com/jjmschofield/GoCrawl/internal/app/links"
 	"github.com/jjmschofield/GoCrawl/internal/app/pages"
 	"io"
 	"net/url"
 )
 
-type ScrapeResult struct {
+type Result struct {
 	OutPages pages.PageGroup
 	OutLinks map[string]links.Link
 }
 
-func Scrape(target url.URL) (result ScrapeResult, err error) {
-	bodyReader, err := fetch.Body(target)
+func Scrape(target url.URL) (result Result, err error) {
+	bodyReader, err := Body(target)
 
 	if err != nil {
-		return ScrapeResult{}, err
+		return Result{}, err
 	}
 
 	result.OutLinks = extractLinks(target, bodyReader)
@@ -28,7 +27,7 @@ func Scrape(target url.URL) (result ScrapeResult, err error) {
 }
 
 func extractLinks(target url.URL, bodyReader io.ReadCloser) (extracted map[string]links.Link) {
-	hrefs := fetch.ReadHrefs(bodyReader)
+	hrefs := ReadHrefs(bodyReader)
 	return links.FromHrefs(target, hrefs)
 }
 

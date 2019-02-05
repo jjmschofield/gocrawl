@@ -3,6 +3,7 @@ package crawl
 import (
 	"github.com/jjmschofield/GoCrawl/internal/app/counters"
 	"github.com/jjmschofield/GoCrawl/internal/app/pages"
+	"github.com/jjmschofield/GoCrawl/internal/app/scrape"
 	"net/url"
 	"sync"
 )
@@ -14,7 +15,7 @@ type WorkerJob struct {
 
 type WorkerResult struct {
 	crawled pages.Page
-	result  ScrapeResult
+	result  scrape.Result
 }
 
 type QueueWorker func(queue chan WorkerJob, out chan WorkerResult, workCount *counters.AtomicInt64, wg *sync.WaitGroup)
@@ -26,7 +27,7 @@ func Worker(queue chan WorkerJob, out chan WorkerResult, workCount *counters.Ato
 
 		crawled := pages.PageFromUrl(job.pageUrl)
 
-		scrapeResult, err := Scrape(crawled.URL)
+		scrapeResult, err := scrape.Scrape(crawled.URL)
 
 		workerResult := WorkerResult{
 			crawled: crawled,

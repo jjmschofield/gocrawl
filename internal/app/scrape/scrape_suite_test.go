@@ -1,4 +1,4 @@
-package fetch_test
+package scrape_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestFetch(t *testing.T) {
+func ScrapeFetch(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Fetch Suite")
+	RunSpecs(t, "Scrape Suite")
 }
