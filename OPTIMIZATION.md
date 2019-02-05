@@ -211,9 +211,7 @@ So first up we will wrap our crawl command in a test and execute it with some be
 go test -cpuprofile cpu.prof -memprofile mem.prof -bench .
 ```
 
-Targeting [Monzo](https://www.monzo.com) we can get the following pretty svg out of pprof and graphviz
-
-![<img alt="performance graph" src="docs/pprof002.svg">](docs/pprof002.svg)
+Targeting [Monzo](https://www.monzo.com) we can get the following pretty svg out of pprof and [graphviz](docs/pprof002.svg).
 
 There was only one thing going through my mind when I saw this: 
 
@@ -231,9 +229,7 @@ func isFile(testUrl url.URL) bool {
 }
 ``` 
 
-We'd previously optimized this due to regex performance on a big old group search, but it still had problems! Creating the matcher as a single var at the package level gives us the following result:
-
-![<img alt="performance graph" src="docs/pprof003.svg">](docs/pprof003.svg)
+We'd previously optimized this due to regex performance on a big old group search, but it still had problems! Creating the matcher as a single var at the package level gives us the following [graphviz](docs/pprof003.svg).
 
 With a single line change, we've achieved 1GB reduction in memory usage for this very small website - nearly an 80% reduction in memory allocation. 
 
@@ -260,9 +256,7 @@ Tokenizer is out of our control for now so we'll leave that alone for now - thou
 
 Our links.ToLinkGroup seems like it is using more memory then it should, not surprising as it's doing lots of slice append operations. So lets start there:
 
-After replacing our LinkGroup construct with a simple map of links we drop about 20mb of memory allocation and get: 
-
-![<img alt="performance graph" src="docs/pprof004.svg">](docs/pprof004.svg)
+After replacing our LinkGroup construct with a simple map of links we drop about 20mb of memory allocation and get this [graphviz](docs/pprof004.svg).
 
 Our top now looks like:
 
@@ -300,9 +294,7 @@ Showing top 10 nodes out of 122
     6.50MB  3.24% 66.68%     6.50MB  3.24%  net/http.(*http2Framer).readMetaFrame.func1
 ``` 
 
-And a graph that looks a like this: 
-
-![<img alt="performance graph" src="docs/pprof005.svg">](docs/pprof005.svg)
+And a graph that looks a like this [graphviz](docs/pprof005.svg).
 
 We'll also ditch writing out links separately as it seems like we are optimizing writes for a query we don't need yet - eg get me all telephone numbers on a site.
 
@@ -346,7 +338,7 @@ Showing top 10 nodes out of 95
       24MB  3.05% 67.73%       24MB  3.05%  crypto/md5.New (inline)
    22.50MB  2.86% 70.58%   177.02MB 22.47%  github.com/jjmschofield/GoCrawl/internal/app/links.NewAbsLink
 ```
-![<img alt="performance graph" src="docs/pprof006.svg">](docs/pprof006.svg)
+Check out the [graphviz](docs/pprof006.svg).
 
 ![geeky guy celebrating](docs/success.gif)
 
