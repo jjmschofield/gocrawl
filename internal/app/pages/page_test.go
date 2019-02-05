@@ -2,7 +2,6 @@ package pages_test
 
 import (
 	"errors"
-	"github.com/jjmschofield/GoCrawl/internal/app/links"
 	. "github.com/jjmschofield/GoCrawl/internal/app/pages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -59,7 +58,6 @@ var _ = Describe("Page", func() {
 			// Arrange
 			srcUrl, _ := url.Parse("https:///www.google.co.uk")
 			underTest := PageFromUrl(*srcUrl)
-			underTest.OutLinks = links.FromHrefs(*srcUrl, []string{"https:///www.google.co.uk/internal"})
 			underTest.Err = errors.New("some error")
 
 			// Act
