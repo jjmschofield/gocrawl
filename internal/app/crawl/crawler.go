@@ -1,9 +1,9 @@
 package crawl
 
 import (
-	"github.com/jjmschofield/GoCrawl/internal/app/pages"
 	"github.com/jjmschofield/GoCrawl/internal/app/caches"
 	"github.com/jjmschofield/GoCrawl/internal/app/counters"
+	"github.com/jjmschofield/GoCrawl/internal/app/pages"
 	"log"
 	"net/url"
 	"sync"
@@ -23,18 +23,18 @@ type Config struct {
 }
 
 type workers struct {
-	crawl CrawlQueueWorker
+	crawl QueueWorker
 }
 
 type channels struct {
-	workerIn  chan pages.Page
-	workerOut chan CrawlWorkerResult
+	workerIn  chan WorkerJob
+	workerOut chan WorkerResult
 	out       chan pages.Page
 }
 
 type lockingCaches struct {
-	processing caches.LockingStr
-	crawled    caches.LockingStr
+	processing caches.StrThreadSafe
+	crawled    caches.StrThreadSafe
 }
 
 type Counters struct {
@@ -45,17 +45,17 @@ type Counters struct {
 	CrawlsQueued  counters.AtomicInt64
 }
 
-func NewCrawler(crawlWorker CrawlQueueWorker, out chan pages.Page, config Config) Crawler {
+func NewCrawler(crawlWorker QueueWorker, out chan pages.Page, config Config) Crawler {
 	return Crawler{
 		Config: config,
 		channels: channels{
-			workerIn:  make(chan pages.Page, config.CrawlWorkerCount),
-			workerOut: make(chan CrawlWorkerResult, config.CrawlWorkerCount),
+			workerIn:  make(chan WorkerJob),
+			workerOut: make(chan WorkerResult),
 			out:       out,
 		},
 		caches: lockingCaches{
-			processing: caches.NewLockingStr(),
-			crawled:    caches.NewLockingStr(),
+			processing: caches.NewStrThreadSafe(),
+			crawled:    caches.NewStrThreadSafe(),
 		},
 		workers: workers{
 			crawl: crawlWorker,
@@ -68,7 +68,7 @@ func (c *Crawler) Crawl(startUrl url.URL) Counters {
 
 	c.startResultWorker()
 
-	c.enqueueCrawl(pages.PageFromUrl(startUrl))
+	c.enqueueUrl(startUrl)
 
 	c.wg.Wait()
 
@@ -78,11 +78,11 @@ func (c *Crawler) Crawl(startUrl url.URL) Counters {
 func (c *Crawler) startWorkers() {
 	for i := 0; i < c.Config.CrawlWorkerCount; i++ {
 		c.wg.Add(1)
-		go c.workers.crawl(c.channels.workerIn, c.channels.workerOut, &c.counters.CrawlsQueued, &c.counters.Crawling, &c.wg)
+		go c.workers.crawl(c.channels.workerIn, c.channels.workerOut, &c.counters.Crawling, &c.wg)
 	}
 }
 
-func (c *Crawler) startResultWorker(){
+func (c *Crawler) startResultWorker() {
 	c.wg.Add(1)
 	go c.crawlResultWorker()
 }
@@ -94,7 +94,7 @@ func (c *Crawler) crawlResultWorker() {
 		c.caches.crawled.Add(result.crawled.Id)
 		c.counters.CrawlComplete.Add(1)
 
-		c.enqueueNewPages(result.result.OutPages.Internal)
+		c.enqueuePageGroup(result.result.OutPages)
 
 		c.counters.Processing.Sub(1)
 		c.caches.processing.Remove(result.crawled.Id)
@@ -109,25 +109,43 @@ func (c *Crawler) crawlResultWorker() {
 	}
 }
 
-func (c *Crawler) enqueueCrawl(page pages.Page) {
-	c.counters.Discovered.Add(1)
-	c.counters.Processing.Add(1)
+func (c *Crawler) enqueueJob(job WorkerJob) {
+	if !c.caches.crawled.Has(job.pageId) && !c.caches.processing.Has(job.pageId) {
+		c.counters.Discovered.Add(1)
+		c.counters.Processing.Add(1)
 
-	c.caches.processing.Add(page.Id)
+		c.caches.processing.Add(job.pageId)
 
-	c.wg.Add(1)
-	go func() {
-		defer c.wg.Done()
-		c.counters.CrawlsQueued.Add(1)
-		c.channels.workerIn <- page
-	}()
+		c.wg.Add(1)
+		go func() {
+			defer c.wg.Done()
+			c.counters.CrawlsQueued.Add(1)
+			c.channels.workerIn <- job
+			c.counters.CrawlsQueued.Sub(1)
+		}()
+	}
 }
 
-func (c *Crawler) enqueueNewPages(pageMap []pages.Page) {
-	for _, page := range pageMap {
-		if !c.caches.crawled.Has(page.Id) && !c.caches.processing.Has(page.Id) {
-			c.enqueueCrawl(page)
+func (c *Crawler) enqueueUrl(srcUrl url.URL){
+	pageId, normalizedUrl := pages.CalcPageId(srcUrl)
+
+	job := WorkerJob{
+		pageId:  pageId,
+		pageUrl: normalizedUrl,
+	}
+
+	c.enqueueJob(job)
+}
+
+func (c *Crawler) enqueuePageGroup(pageGroup pages.PageGroup) {
+	for pageId, href := range pageGroup.Internal {
+		pageUrl, _ := url.Parse(href)
+
+		job := WorkerJob{
+			pageId:  pageId,
+			pageUrl: *pageUrl,
 		}
+		c.enqueueJob(job)
 	}
 }
 

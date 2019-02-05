@@ -29,7 +29,7 @@ func main() {
 
 	start := time.Now()
 
-	crawler := crawl.NewCrawler(crawl.CrawlWorker, out, crawl.Config{CrawlWorkerCount: *workerCount})
+	crawler := crawl.NewCrawler(crawl.Worker, out, crawl.Config{CrawlWorkerCount: *workerCount})
 	counters := crawler.Crawl(*crawlUrl)
 
 	wg.Wait()

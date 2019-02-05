@@ -2,32 +2,32 @@ package caches
 
 import "sync"
 
-type LockingStr struct {
+type StrThreadSafe struct {
 	cacheMutex sync.Mutex
-	cache      map[string]interface{}
+	cache      map[string]bool
 }
 
-func NewLockingStr() LockingStr {
-	return LockingStr{
-		cache: make(map[string]interface{}),
+func NewStrThreadSafe() StrThreadSafe {
+	return StrThreadSafe{
+		cache: make(map[string]bool),
 	}
 }
 
-func (strCache *LockingStr) Add(str string) {
+func (strCache *StrThreadSafe) Add(str string) {
 	defer strCache.cacheMutex.Unlock()
 	strCache.cacheMutex.Lock()
 
-	strCache.cache[str] = nil
+	strCache.cache[str] = true
 }
 
-func (strCache *LockingStr) Remove(str string) {
+func (strCache *StrThreadSafe) Remove(str string) {
 	defer strCache.cacheMutex.Unlock()
 	strCache.cacheMutex.Lock()
 
 	delete(strCache.cache, str)
 }
 
-func (strCache *LockingStr) Has(str string) bool {
+func (strCache *StrThreadSafe) Has(str string) bool {
 	defer strCache.cacheMutex.Unlock()
 	strCache.cacheMutex.Lock()
 
@@ -35,7 +35,7 @@ func (strCache *LockingStr) Has(str string) bool {
 	return hasKey
 }
 
-func (strCache *LockingStr) Count() int {
+func (strCache *StrThreadSafe) Count() int {
 	defer strCache.cacheMutex.Unlock()
 	strCache.cacheMutex.Lock()
 

@@ -122,7 +122,7 @@ var _ = Describe("Link", func() {
 
 	Describe("FromHrefs", func(){
 		var (
-			underTest func(srcUrl url.URL, hrefs []string) (links []Link)
+			underTest func(srcUrl url.URL, hrefs []string) (links map[string]Link)
 		)
 
 		BeforeEach(func(){
@@ -169,22 +169,6 @@ var _ = Describe("Link", func() {
 				// Assert
 				Expect(len(result)).To(Equal(expected))
 			})
-		})
-	})
-
-	Describe("MarshalJSON", func(){
-		It("should marshal to JSON", func(){
-			// Arrange
-			fromUrl, _ := url.Parse("https://www.google.co.uk")
-			toUrl, _ := url.Parse("https://www.google.co.uk/some/path")
-			underTest := NewAbsLink(*fromUrl, *toUrl)
-			expected := []byte(`{"id":"a71e371fbedd579f156709922c7c0070","toUrl":"https://www.google.co.uk/some/path","type":"internal","fromUrl":"https://www.google.co.uk"}`)
-
-			// Act
-			result, _ := underTest.MarshalJSON()
-
-			// Assert
-			Expect(result).To(Equal(expected))
 		})
 	})
 })

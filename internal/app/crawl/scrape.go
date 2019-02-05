@@ -8,37 +8,42 @@ import (
 	"net/url"
 )
 
-type PageCrawlResult struct {
+type ScrapeResult struct {
 	OutPages pages.PageGroup
-	OutLinks links.LinkGroup
+	OutLinks map[string]links.Link
 }
 
-func Scrape(target url.URL) (result PageCrawlResult, err error) {
+func Scrape(target url.URL) (result ScrapeResult, err error) {
 	bodyReader, err := fetch.Body(target)
 
 	if err != nil {
-		return PageCrawlResult{}, err
+		return ScrapeResult{}, err
 	}
 
-	result.OutLinks = links.ToLinkGroup(extractLinks(target, bodyReader))
+	result.OutLinks = extractLinks(target, bodyReader)
 
-	result.OutPages = createPages(result.OutLinks)
+	result.OutPages = createOutPages(result.OutLinks)
 
 	return result, nil
 }
 
-func extractLinks(target url.URL, bodyReader io.ReadCloser) (extracted []links.Link) {
+func extractLinks(target url.URL, bodyReader io.ReadCloser) (extracted map[string]links.Link) {
 	hrefs := fetch.ReadHrefs(bodyReader)
-
 	return links.FromHrefs(target, hrefs)
 }
 
-func createPages(outLinks links.LinkGroup) (group pages.PageGroup) {
-	var internal []pages.Page
-
-	for _, link := range outLinks.Internal {
-		internal = append(internal, pages.PageFromUrl(link.ToURL))
+func createOutPages(outLinks map[string]links.Link) (group pages.PageGroup) {
+	group = pages.PageGroup{
+		Internal: make(map[string]string),
 	}
 
-	return pages.ToPageGroup(internal)
+	for _, link := range outLinks {
+		if link.Type == links.InternalPageType{
+			pageUrl, _ :=  url.Parse(link.ToURL)
+			id, normalizedUrl := pages.CalcPageId(*pageUrl)
+			group.Internal[id] = normalizedUrl.String()
+		}
+	}
+
+	return group
 }

@@ -40,7 +40,7 @@ var _ = Describe("Page", func() {
 			// Arrange
 			srcUrl, _ := url.Parse("https:///www.google.co.uk")
 			underTest := PageFromUrl(*srcUrl)
-			expected := []byte(`{"id":"e23861440e88ba6d0510254bdd3fe614","url":"https:///www.google.co.uk","outPages":{"internal":[]},"outLinks":{"internal":[],"internalFiles":[],"external":[],"externalFiles":[],"tel":[],"mailto":[],"unknown":[]},"error":null}`)
+			expected := []byte(`{"id":"e23861440e88ba6d0510254bdd3fe614","url":"https:///www.google.co.uk","outPages":{"internal":[]},"outLinks":{},"error":null}`)
 
 			// Act
 			result, _ := underTest.MarshalJSON()
@@ -59,7 +59,7 @@ var _ = Describe("Page", func() {
 			// Arrange
 			srcUrl, _ := url.Parse("https:///www.google.co.uk")
 			underTest := PageFromUrl(*srcUrl)
-			underTest.OutLinks = links.ToLinkGroup(links.FromHrefs(*srcUrl, []string{"https:///www.google.co.uk/internal"}))
+			underTest.OutLinks = links.FromHrefs(*srcUrl, []string{"https:///www.google.co.uk/internal"})
 			underTest.Err = errors.New("some error")
 
 			// Act

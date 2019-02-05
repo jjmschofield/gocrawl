@@ -19,7 +19,7 @@ const (
 
 // This is a sorted array used in binary search, when adding values add them in alphabetically
 var fileExtensions = []string{"asx", "avi", "avi", "doc", "docx", "exe", "f4v", "flv", "gif", "jar", "jar", "jpeg", "jpg", "m1v", "mov", "mp2", "mp4", "mpeg", "mpg", "pdf", "png", "pps", "raw", "rss", "swf", "wav", "wma", "wmv", "xls", "xml", "xsd", "zip"}
-//var fileExtensions = []string{"boo"}
+var extensionRegex = regexp.MustCompile("\\.[\\w]+$") // .* at end of line
 
 func calcType(fromUrl url.URL, toUrl url.URL) string {
 	if toUrl.Scheme == "tel" {
@@ -48,7 +48,6 @@ func calcType(fromUrl url.URL, toUrl url.URL) string {
 // By checking teach path for large number of extensions in a regex we seem to loose quite a bit of time at scale
 // Instead we qualify if the url has an extension first and then run test to check if the extension is blacklisted using a binary search
 func isFile(testUrl url.URL) bool {
-	extensionRegex := regexp.MustCompile("\\.[\\w]+$") // .* at end of line
 	extension := extensionRegex.FindString(testUrl.Path)
 
 	if len(extension) < 1 {

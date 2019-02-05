@@ -6,13 +6,13 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("LockingStr", func() {
+var _ = Describe("StrThreadSafe", func() {
 	var (
-		underTest  LockingStr
+		underTest StrThreadSafe
 	)
 
 	BeforeEach(func() {
-		underTest = NewLockingStr()
+		underTest = NewStrThreadSafe()
 	})
 
 	Describe("Add", func(){
