@@ -11,7 +11,7 @@ import (
 
 type PageBodyFetcher func(url.URL) (bodyReader io.ReadCloser, err error)
 
-func Body(targetUrl url.URL) (bodyReader io.ReadCloser, err error) {
+func fetchBody(targetUrl url.URL) (bodyReader io.ReadCloser, err error) {
 	response, err := http.Get(targetUrl.String())
 
 	if err != nil {
@@ -20,7 +20,7 @@ func Body(targetUrl url.URL) (bodyReader io.ReadCloser, err error) {
 	}
 
 	if !isAllowedContentType(response) {
-		err := fmt.Errorf("non-htmldocs Content-Type from %s", targetUrl.String())
+		err := fmt.Errorf("non-html Content-Type from %s", targetUrl.String())
 		log.Print(err)
 		return nil, err
 	}

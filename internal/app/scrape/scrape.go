@@ -3,7 +3,6 @@ package scrape
 import (
 	"github.com/jjmschofield/GoCrawl/internal/app/links"
 	"github.com/jjmschofield/GoCrawl/internal/app/pages"
-	"io"
 	"net/url"
 )
 
@@ -13,22 +12,18 @@ type Result struct {
 }
 
 func Scrape(target url.URL) (result Result, err error) {
-	bodyReader, err := Body(target)
+	outLinks, err := fetchLinks(target)
 
 	if err != nil {
 		return Result{}, err
 	}
 
-	result.OutLinks = extractLinks(target, bodyReader)
-
-	result.OutPages = createOutPages(result.OutLinks)
+	result = Result{
+		OutLinks: outLinks,
+		OutPages: createOutPages(outLinks),
+	}
 
 	return result, nil
-}
-
-func extractLinks(target url.URL, bodyReader io.ReadCloser) (extracted map[string]links.Link) {
-	hrefs := ReadHrefs(bodyReader)
-	return links.FromHrefs(target, hrefs)
 }
 
 func createOutPages(outLinks map[string]links.Link) (group pages.PageGroup) {

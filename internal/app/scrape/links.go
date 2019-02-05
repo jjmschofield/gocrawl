@@ -2,15 +2,27 @@ package scrape
 
 import (
 	"fmt"
+	"github.com/jjmschofield/GoCrawl/internal/app/links"
 	"golang.org/x/net/html"
 	"io"
 	"log"
+	"net/url"
 )
 
-type HrefReader func(bodyReader io.ReadCloser) (hrefs []string)
+func fetchLinks(target url.URL) (linkMap map[string]links.Link, err error) {
+	bodyReader, err := fetchBody(target)
 
-func ReadHrefs(bodyReader io.ReadCloser) (hrefs []string) {
+	if err != nil {
+		return nil, err
+	}
+
+	return readLinks(target, bodyReader), nil
+}
+
+func readLinks(srcUrl url.URL, bodyReader io.ReadCloser) (outLinks map[string]links.Link) {
 	defer bodyReader.Close()
+
+	outLinks = make(map[string]links.Link)
 
 	tokens := html.NewTokenizer(bodyReader)
 
@@ -25,12 +37,15 @@ func ReadHrefs(bodyReader io.ReadCloser) (hrefs []string) {
 		} else if isAnchor {
 			href, err := getAttrValFromToken("href", token)
 			if err == nil {
-				hrefs = append(hrefs, href)
+				link, err := links.FromHref(srcUrl, href)
+				if err == nil {
+					outLinks[link.Id] = link
+				}
 			}
 		}
 	}
 
-	return hrefs
+	return outLinks
 }
 
 func tokenIsTagType(tagType string, tokenType html.TokenType, token html.Token) (isAnchor bool, eof bool) {

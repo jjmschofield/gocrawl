@@ -40,19 +40,3 @@ func FromHref(pageUrl url.URL, href string) (link Link, err error) {
 
 	return NewAbsLink(pageUrl, *toUrl), nil
 }
-
-func FromHrefs(srcUrl url.URL, hrefs []string) (links map[string]Link) {
-	links = make(map[string]Link)
-
-	for _, href := range hrefs {
-		link, err := FromHref(srcUrl, href)
-
-		if err != nil {
-			log.Printf("invalid url found %s on %s", href, srcUrl.String())
-		} else {
-			links[link.Id] = link
-		}
-	}
-
-	return links
-}
