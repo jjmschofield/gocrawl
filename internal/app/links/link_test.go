@@ -32,26 +32,28 @@ var _ = Describe("Link", func() {
 
 		It("should assign the toUrl", func(){
 			// Arrange
+			expected := "https://www.google.co.uk/some/path"
 			fromUrl, _ := url.Parse("https://www.google.co.uk")
-			expected, _ := url.Parse("https://www.google.co.uk/some/path")
+			toUrl, _ := url.Parse(expected)
 
 			// Act
-			link := underTest(*fromUrl, *expected)
+			link := underTest(*fromUrl, *toUrl)
 
 			// Asset
-			Expect(link.ToURL).To(Equal(*expected))
+			Expect(link.ToURL).To(Equal(expected))
 		})
 
 		It("should assign the fromUrl", func(){
 			// Arrange
-			expected, _ := url.Parse("https://www.google.co.uk")
+			expected := "https://www.google.co.uk"
+			fromUrl, _ := url.Parse(expected)
 			toUrl, _ := url.Parse("https://www.google.co.uk/some/path")
 
 			// Act
-			link := underTest(*expected, *toUrl)
+			link := underTest(*fromUrl, *toUrl)
 
 			// Asset
-			Expect(link.FromURL).To(Equal(*expected))
+			Expect(link.FromURL).To(Equal(expected))
 		})
 
 		It("should calculate a link type", func(){
@@ -67,17 +69,17 @@ var _ = Describe("Link", func() {
 			Expect(link.Type).To(Equal(expected))
 		})
 
-		It("should resolve relative to urls to be absolute urls with the base of the from url", func(){
+		It("should resolve relative toUrl's to be absolute urls with the base of the from url", func(){
 			// Arrange
 			fromUrl, _ := url.Parse("https://www.google.co.uk/some/src/path")
 			toUrl, _ := url.Parse("../dest/path")
-			expected, _ := url.Parse("https://www.google.co.uk/some/dest/path")
+			expected := "https://www.google.co.uk/some/dest/path"
 
 			// Act
 			link := underTest(*fromUrl, *toUrl)
 
 			// Asset
-			Expect(link.ToURL).To(Equal(*expected))
+			Expect(link.ToURL).To(Equal(expected))
 		})
 	})
 

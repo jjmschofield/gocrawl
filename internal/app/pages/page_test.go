@@ -38,9 +38,9 @@ var _ = Describe("Page", func() {
 	Describe("MarshalJson", func(){
 		It("should marshal to json with sensible defaults", func(){
 			// Arrange
-			srcUrl, _ := url.Parse("https:///www.google.co.uk")
+			srcUrl, _ := url.Parse("https://www.google.co.uk")
 			underTest := PageFromUrl(*srcUrl)
-			expected := []byte(`{"id":"e23861440e88ba6d0510254bdd3fe614","url":"https:///www.google.co.uk","outPages":{"internal":[]},"outLinks":{},"error":null}`)
+			expected := []byte(`{"id":"3f1437859f73b447885255a95afa99a1","url":"https://www.google.co.uk","outPages":{"internal":{}},"outLinks":{},"error":null}`)
 
 			// Act
 			result, _ := underTest.MarshalJSON()
