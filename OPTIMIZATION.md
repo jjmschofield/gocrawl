@@ -134,7 +134,8 @@ Wow! The difference for download heavy sites is staggering 61% less "pages" to c
 
 What's the fun of working in Go if you can't break out an animated gopher when things go well?
 
-**UPDATE: It was later discovered that** 
+**UPDATE:**
+It was later discovered that: 
 1) [Citizens Advice Scotland](https://www.cas.org.uk) is very slow with a very fast cold cache
 2) Were omitting query params from page url normalization - query params are allowed in sitemaps according to sitemaps.org  
 3) Using a worker count of 1000 isn't very polite or even the most efficient number of workers  
@@ -143,7 +144,20 @@ What's the fun of working in Go if you can't break out an animated gopher when t
 I'm not one to put a dancing gopher back in the box, so I returned to this after the optimizations below (and output writing) had been implemented.
 
 So first a benchmark without the file filter:
+
+| Site  | Pages | 250 Workers Run 1 | 250 Workers Run 2 | 250 Workers Run 3 | 250 Workers Avg | 
+|---|---|---|---|---|---|
+| https://www.cas.org.uk | 3,996 | 78,109ms | 75,963ms | 80,415ms | 78,162ms |
+
+And one with:
+
+| Site  | Pages | 250 Workers Run 1 | 250 Workers Run 2 | 250 Workers Run 3 | 250 Workers Avg |  
+|---|---|---|---|---|---|
+| https://www.cas.org.uk | 2,543 | 5,402ms | 5,971ms | 6,335ms | 5,902ms |
+
+We didn't quite see the same performance benefit (93% vs 96%) but we are splitting hairs here - this optimization has a huge benefit for some sites. Double gopher.
  
+![Dancing gopher](./docs/gopher-dance-long-3x.gif)![Dancing gopher's friend](./docs/gopher-dance-long-3x.gif) 
 
 
 ## Crawling Really Big Sites 
