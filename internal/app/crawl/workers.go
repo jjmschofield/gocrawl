@@ -14,34 +14,37 @@ type WorkerJob struct {
 }
 
 type WorkerResult struct {
-	crawled pages.Page
+	crawled string
 	result  scrape.Result
 }
 
-type QueueWorker func(queue chan WorkerJob, out chan WorkerResult, workCount *counters.AtomicInt64, wg *sync.WaitGroup)
+type QueueWorker func(queue chan WorkerJob, out chan WorkerResult, write chan pages.Page, workCount *counters.AtomicInt64, wg *sync.WaitGroup)
 
-func Worker(queue chan WorkerJob, out chan WorkerResult, workCount *counters.AtomicInt64, wg *sync.WaitGroup) {
+func Worker(queue chan WorkerJob, out chan WorkerResult, write chan pages.Page, workCount *counters.AtomicInt64, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for job := range queue {
 		workCount.Add(1)
 
-		crawled := pages.PageFromUrl(job.pageUrl)
+		page := pages.PageFromUrl(job.pageUrl)
 
-		scrapeResult, err := scrape.Scrape(crawled.URL)
+		scrapeResult, err := scrape.Scrape(page.URL)
+
+		if err != nil {
+			page.Err = err
+		} else {
+			page.OutLinks = scrapeResult.OutLinks
+			page.OutPages = scrapeResult.OutPages
+		}
+
+		write <- page
 
 		workerResult := WorkerResult{
-			crawled: crawled,
+			crawled: page.Id,
 			result:  scrapeResult,
 		}
 
-		if err != nil {
-			workerResult.crawled.Err = err
-		} else {
-			workerResult.crawled.OutLinks = scrapeResult.OutLinks
-			workerResult.crawled.OutPages = scrapeResult.OutPages
-		}
-
 		out <- workerResult
+
 		workCount.Sub(1)
 	}
 }
