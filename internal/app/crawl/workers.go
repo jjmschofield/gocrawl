@@ -59,7 +59,5 @@ func (w *Worker) Start(chans WorkerChannels, queueCounter *counters.AtomicInt64,
 		}
 
 		chans.Out <- workerResult
-
-		workCounter.Sub(1)
 	}
 }
