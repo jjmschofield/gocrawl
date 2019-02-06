@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	crawlUrlRaw := flag.String("url", "https://monzo.com", "an absolute url eg http://www.google.co.uk")
+	crawlUrlRaw := flag.String("url", "https://monzo.com", "an absolute url, including protocol and hostname")
 	workerCount := flag.Int("workers", 100, "Number of crawl workers to run")
 	outFilePath := flag.String("dir", "data", "A file path to send results to")
 
