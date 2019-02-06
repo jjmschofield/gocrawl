@@ -15,8 +15,22 @@ type FileWriter struct {
 }
 
 func (w *FileWriter) Start(in chan pages.Page) {
-	err := os.Mkdir(w.FilePath, os.ModePerm)
-	pageFile, err := os.Create(path.Join(w.FilePath, "pages.jsonl"))
+	workingDir, err := os.Getwd()
+
+	if err != nil {
+		log.Panicf("Can't get working directory!, %v", err)
+	}
+
+	filePath := path.Join(workingDir, w.FilePath)
+
+	err = os.Mkdir(filePath, os.ModePerm)
+
+	if err != nil {
+		log.Panicf("Can't create directory!, %v", err)
+	}
+
+
+	pageFile, err := os.Create(path.Join(filePath, "pages.jsonl"))
 
 	if err != nil {
 		log.Panicf("Can't open file to write results to!, %v", err)
