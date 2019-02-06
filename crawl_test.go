@@ -14,7 +14,7 @@ var _ = Describe("crawl", func() {
 
 		b.Time("runtime", func() {
 			crawlUrl, _ := url.Parse("https://www.monzo.com")
-			counters = Crawl(*crawlUrl, 100, "../../data")
+			counters = Crawl(*crawlUrl, 100, "./data")
 		})
 
 		Expect(counters.Discovered.Count()).To(BeNumerically(">", 1))

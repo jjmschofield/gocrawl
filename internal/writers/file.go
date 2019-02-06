@@ -23,7 +23,7 @@ func (w *FileWriter) Start(in chan pages.Page) {
 
 	filePath := path.Join(workingDir, w.FilePath)
 
-	err = os.Mkdir(filePath, os.ModePerm)
+	err = os.MkdirAll (filePath, os.ModePerm)
 
 	if err != nil {
 		log.Panicf("Can't create directory!, %v", err)
