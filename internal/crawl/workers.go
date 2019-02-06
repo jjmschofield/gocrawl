@@ -1,0 +1,63 @@
+package crawl
+
+import (
+	"github.com/jjmschofield/GoCrawl/internal/counters"
+	"github.com/jjmschofield/GoCrawl/internal/pages"
+	"github.com/jjmschofield/GoCrawl/internal/scrape"
+	"net/url"
+	"sync"
+)
+
+//go:generate counterfeiter . QueueWorker
+type QueueWorker interface {
+	Start(chans WorkerChannels, qCounter *counters.AtomicInt64, workCounter *counters.AtomicInt64, wg *sync.WaitGroup)
+}
+
+type WorkerJob struct {
+	Id  string
+	URL url.URL
+}
+
+type WorkerResult struct {
+	CrawledId string
+	Result    scrape.Result
+}
+
+type WorkerChannels struct {
+	In    chan WorkerJob
+	Out   chan WorkerResult
+	Write chan pages.Page
+}
+
+type Worker struct {
+	Scraper scrape.Scraper
+}
+
+func (w *Worker) Start(chans WorkerChannels, queueCounter *counters.AtomicInt64, workCounter *counters.AtomicInt64, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	for job := range chans.In {
+		workCounter.Add(1)
+		queueCounter.Sub(1)
+
+		page := pages.PageFromUrl(job.URL)
+
+		scrapeResult, err := w.Scraper.Scrape(page.URL)
+
+		if err != nil {
+			page.Err = err
+		} else {
+			page.OutLinks = scrapeResult.OutLinks
+			page.OutPages = scrapeResult.OutPages
+		}
+
+		chans.Write <- page
+
+		workerResult := WorkerResult{
+			CrawledId: page.Id,
+			Result:    scrapeResult,
+		}
+
+		chans.Out <- workerResult
+	}
+}
