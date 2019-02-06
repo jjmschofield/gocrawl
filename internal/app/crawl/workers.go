@@ -8,26 +8,41 @@ import (
 	"sync"
 )
 
+//go:generate counterfeiter . QueueWorker
+type QueueWorker interface {
+	Start(chans WorkerChannels, qCounter *counters.AtomicInt64, workCounter *counters.AtomicInt64, wg *sync.WaitGroup)
+}
+
 type WorkerJob struct {
-	pageId string
-	pageUrl url.URL
+	Id  string
+	URL url.URL
 }
 
 type WorkerResult struct {
-	crawled string
-	result  scrape.Result
+	CrawledId string
+	Result    scrape.Result
 }
 
-type QueueWorker func(queue chan WorkerJob, out chan WorkerResult, write chan pages.Page, workCount *counters.AtomicInt64, wg *sync.WaitGroup)
+type WorkerChannels struct {
+	In    chan WorkerJob
+	Out   chan WorkerResult
+	Write chan pages.Page
+}
 
-func Worker(queue chan WorkerJob, out chan WorkerResult, write chan pages.Page, workCount *counters.AtomicInt64, wg *sync.WaitGroup) {
+type Worker struct {
+	Scraper scrape.Scraper
+}
+
+func (w *Worker) Start(chans WorkerChannels, queueCounter *counters.AtomicInt64, workCounter *counters.AtomicInt64, wg *sync.WaitGroup) {
 	defer wg.Done()
-	for job := range queue {
-		workCount.Add(1)
 
-		page := pages.PageFromUrl(job.pageUrl)
+	for job := range chans.In {
+		workCounter.Add(1)
+		queueCounter.Sub(1)
 
-		scrapeResult, err := scrape.Scrape(page.URL)
+		page := pages.PageFromUrl(job.URL)
+
+		scrapeResult, err := w.Scraper.Scrape(page.URL)
 
 		if err != nil {
 			page.Err = err
@@ -36,15 +51,15 @@ func Worker(queue chan WorkerJob, out chan WorkerResult, write chan pages.Page, 
 			page.OutPages = scrapeResult.OutPages
 		}
 
-		write <- page
+		chans.Write <- page
 
 		workerResult := WorkerResult{
-			crawled: page.Id,
-			result:  scrapeResult,
+			CrawledId: page.Id,
+			Result:    scrapeResult,
 		}
 
-		out <- workerResult
+		chans.Out <- workerResult
 
-		workCount.Sub(1)
+		workCounter.Sub(1)
 	}
 }
