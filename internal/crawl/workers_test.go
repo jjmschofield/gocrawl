@@ -7,7 +7,7 @@ import (
 	"github.com/jjmschofield/gocrawl/internal/links"
 	"github.com/jjmschofield/gocrawl/internal/pages"
 	"github.com/jjmschofield/gocrawl/internal/scrape"
-	"github.com/jjmschofield/gocrawl/internal/scrapeapefakes"
+	"github.com/jjmschofield/gocrawl/internal/scrape/scrapefakes"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"net/url"
