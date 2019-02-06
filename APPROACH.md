@@ -1,3 +1,17 @@
+# Objective and Approach 
+So our crawler should:
+
+* Crawl to find all pages from a starting absolute URL 
+* Not follow external pages
+* Print a simple site map, showing the links between pages
+
+Sounds kind of simple? We'll make things a bit more interesting (and real worldish) with some additional non-functional requirements:
+
+* As this operation is going to be waiting a lot for I/O operations - we will crawl pages in parallel to make better use of system resources and to get the job done faster
+* Whilst DDOSing some poor webmasters site sounds like fun - we'll add a concurrency control to control how many parallel crawls we have running   
+* We will leave the solution open for extension to store crawl results outside of memory - this could support crawling huge sites or many sites, but we are likely going to find writes tricky if we are running really fast parallel operations
+* We will leave the solution open for extension to run as separate services - this would support scaling parts of the operation independently, but we are going to have to be quite careful with how we lay the code out
+
 # Approach
 ## Language Selection
 So first and foremost we are going to pick Go as our tool. 
