@@ -1,7 +1,7 @@
 package caches_test
 
 import (
-	. "github.com/jjmschofield/GoCrawl/internal/caches"
+	. "github.com/jjmschofield/gocrawl/internal/caches"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

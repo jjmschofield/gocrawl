@@ -1,8 +1,8 @@
 package scrape
 
 import (
-	"github.com/jjmschofield/GoCrawl/internal/links"
-	"github.com/jjmschofield/GoCrawl/internal/pages"
+	"github.com/jjmschofield/gocrawl/internal/links"
+	"github.com/jjmschofield/gocrawl/internal/pages"
 	"net/url"
 )
 

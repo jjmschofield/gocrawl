@@ -1,8 +1,8 @@
 package main_test
 
 import (
-	. "github.com/jjmschofield/GoCrawl"
-	"github.com/jjmschofield/GoCrawl/internal/crawl"
+	. "github.com/jjmschofield/gocrawl"
+	"github.com/jjmschofield/gocrawl/internal/crawl"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"net/url"

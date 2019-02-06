@@ -1,6 +1,6 @@
 package writers
 
-import "github.com/jjmschofield/GoCrawl/internal/pages"
+import "github.com/jjmschofield/gocrawl/internal/pages"
 
 //go:generate counterfeiter . Writer
 type Writer interface {

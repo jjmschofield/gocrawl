@@ -1,11 +1,11 @@
 package crawl
 
 import (
-	"github.com/jjmschofield/GoCrawl/internal/caches"
-	"github.com/jjmschofield/GoCrawl/internal/counters"
-	"github.com/jjmschofield/GoCrawl/internal/pages"
-	"github.com/jjmschofield/GoCrawl/internal/scrape"
-	"github.com/jjmschofield/GoCrawl/internal/writers"
+	"github.com/jjmschofield/gocrawl/internal/caches"
+	"github.com/jjmschofield/gocrawl/internal/counters"
+	"github.com/jjmschofield/gocrawl/internal/pages"
+	"github.com/jjmschofield/gocrawl/internal/scrape"
+	"github.com/jjmschofield/gocrawl/internal/writers"
 	"log"
 	"net/url"
 	"sync"

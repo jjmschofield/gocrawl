@@ -2,7 +2,7 @@ package scrape
 
 import (
 	"fmt"
-	"github.com/jjmschofield/GoCrawl/internal/links"
+	"github.com/jjmschofield/gocrawl/internal/links"
 	"golang.org/x/net/html"
 	"io"
 	"log"

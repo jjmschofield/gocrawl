@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"sync"
 
-	"github.com/jjmschofield/GoCrawl/internal/crawl"
+	"github.com/jjmschofield/gocrawl/internal/crawl"
 )
 
 type FakeCrawler struct {

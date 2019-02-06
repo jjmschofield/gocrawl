@@ -1,14 +1,14 @@
 package crawl_test
 
 import (
-	"github.com/jjmschofield/GoCrawl/internal/caches"
-	"github.com/jjmschofield/GoCrawl/internal/counters"
-	. "github.com/jjmschofield/GoCrawl/internal/crawl"
-	"github.com/jjmschofield/GoCrawl/internal/crawlwlfakes"
-	"github.com/jjmschofield/GoCrawl/internal/pages"
-	"github.com/jjmschofield/GoCrawl/internal/scrape"
-	"github.com/jjmschofield/GoCrawl/internal/writers"
-	"github.com/jjmschofield/GoCrawl/internal/writerstersfakes"
+	"github.com/jjmschofield/gocrawl/internal/caches"
+	"github.com/jjmschofield/gocrawl/internal/counters"
+	. "github.com/jjmschofield/gocrawl/internal/crawl"
+	"github.com/jjmschofield/gocrawl/internal/crawlwlfakes"
+	"github.com/jjmschofield/gocrawl/internal/pages"
+	"github.com/jjmschofield/gocrawl/internal/scrape"
+	"github.com/jjmschofield/gocrawl/internal/writers"
+	"github.com/jjmschofield/gocrawl/internal/writerstersfakes"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"io/ioutil"

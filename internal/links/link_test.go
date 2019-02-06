@@ -1,7 +1,7 @@
 package links_test
 
 import (
-	. "github.com/jjmschofield/GoCrawl/internal/links"
+	. "github.com/jjmschofield/gocrawl/internal/links"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"net/url"

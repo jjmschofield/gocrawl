@@ -2,7 +2,7 @@ package pages
 
 import (
 	"encoding/json"
-	"github.com/jjmschofield/GoCrawl/internal/links"
+	"github.com/jjmschofield/gocrawl/internal/links"
 	"log"
 	"net/url"
 )

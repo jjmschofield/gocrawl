@@ -1,7 +1,7 @@
 package counters_test
 
 import (
-	. "github.com/jjmschofield/GoCrawl/internal/counters"
+	. "github.com/jjmschofield/gocrawl/internal/counters"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

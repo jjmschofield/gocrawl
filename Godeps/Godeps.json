@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/jjmschofield/GoCrawl",
+	"ImportPath": "github.com/jjmschofield/gocrawl",
 	"GoVersion": "go1.11",
 	"GodepVersion": "v80",
 	"Packages": [

@@ -2,12 +2,12 @@ package crawl_test
 
 import (
 	"errors"
-	"github.com/jjmschofield/GoCrawl/internal/counters"
-	. "github.com/jjmschofield/GoCrawl/internal/crawl"
-	"github.com/jjmschofield/GoCrawl/internal/links"
-	"github.com/jjmschofield/GoCrawl/internal/pages"
-	"github.com/jjmschofield/GoCrawl/internal/scrape"
-	"github.com/jjmschofield/GoCrawl/internal/scrapeapefakes"
+	"github.com/jjmschofield/gocrawl/internal/counters"
+	. "github.com/jjmschofield/gocrawl/internal/crawl"
+	"github.com/jjmschofield/gocrawl/internal/links"
+	"github.com/jjmschofield/gocrawl/internal/pages"
+	"github.com/jjmschofield/gocrawl/internal/scrape"
+	"github.com/jjmschofield/gocrawl/internal/scrapeapefakes"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"net/url"

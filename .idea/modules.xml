@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/GoCrawl.iml" filepath="$PROJECT_DIR$/.idea/GoCrawl.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/gocrawl.iml" filepath="$PROJECT_DIR$/.idea/gocrawl.iml" />
     </modules>
   </component>
 </project>

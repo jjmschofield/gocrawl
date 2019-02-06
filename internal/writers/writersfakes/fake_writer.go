@@ -4,8 +4,8 @@ package writersfakes
 import (
 	"sync"
 
-	"github.com/jjmschofield/GoCrawl/internal/pages"
-	"github.com/jjmschofield/GoCrawl/internal/writers"
+	"github.com/jjmschofield/gocrawl/internal/pages"
+	"github.com/jjmschofield/gocrawl/internal/writers"
 )
 
 type FakeWriter struct {

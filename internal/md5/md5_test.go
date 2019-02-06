@@ -1,7 +1,7 @@
 package md5_test
 
 import (
-	. "github.com/jjmschofield/GoCrawl/internal/md5"
+	. "github.com/jjmschofield/gocrawl/internal/md5"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

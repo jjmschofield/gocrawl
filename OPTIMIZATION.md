@@ -254,15 +254,15 @@ And now we have some targets for our refactors:
 ```
 Showing top 10 nodes out of 129
       flat  flat%   sum%        cum   cum%
-   33.52MB 12.80% 12.80%    34.52MB 13.18%  github.com/jjmschofield/GoCrawl/vendor/golang.org/x/net/html.(*Tokenizer).Token
-   22.12MB  8.45% 21.24%    22.12MB  8.45%  github.com/jjmschofield/GoCrawl/internal/app/links.ToLinkGroup
-   19.70MB  7.52% 28.76%    30.78MB 11.75%  github.com/jjmschofield/GoCrawl/internal/app/crawl.createPages
+   33.52MB 12.80% 12.80%    34.52MB 13.18%  github.com/jjmschofield/gocrawl/vendor/golang.org/x/net/html.(*Tokenizer).Token
+   22.12MB  8.45% 21.24%    22.12MB  8.45%  github.com/jjmschofield/gocrawl/internal/app/links.ToLinkGroup
+   19.70MB  7.52% 28.76%    30.78MB 11.75%  github.com/jjmschofield/gocrawl/internal/app/crawl.createPages
    18.05MB  6.89% 35.66%    18.05MB  6.89%  compress/flate.(*dictDecoder).init
-   17.71MB  6.76% 42.42%    45.71MB 17.45%  github.com/jjmschofield/GoCrawl/internal/app/links.FromHrefs
+   17.71MB  6.76% 42.42%    45.71MB 17.45%  github.com/jjmschofield/gocrawl/internal/app/links.FromHrefs
       10MB  3.82% 46.23%       10MB  3.82%  strings.(*Builder).WriteString (inline)
     9.03MB  3.45% 49.68%     9.03MB  3.45%  bytes.makeSlice
     8.51MB  3.25% 52.93%    11.02MB  4.21%  encoding/json.Marshal
-    7.58MB  2.89% 55.82%     7.58MB  2.89%  github.com/jjmschofield/GoCrawl/internal/app/pages.ToPageGroup (inline)
+    7.58MB  2.89% 55.82%     7.58MB  2.89%  github.com/jjmschofield/gocrawl/internal/app/pages.ToPageGroup (inline)
     7.52MB  2.87% 58.69%     7.52MB  2.87%  bytes.(*Buffer).String
 ``` 
 
@@ -277,7 +277,7 @@ Our top now looks like:
 ```
  Showing top 10 nodes out of 119
        flat  flat%   sum%        cum   cum%
-    36.05MB 15.75% 15.75%    36.55MB 15.97%  github.com/jjmschofield/GoCrawl/vendor/golang.org/x/net/html.(*Tokenizer).Token
+    36.05MB 15.75% 15.75%    36.55MB 15.97%  github.com/jjmschofield/gocrawl/vendor/golang.org/x/net/html.(*Tokenizer).Token
     19.60MB  8.56% 24.31%    19.60MB  8.56%  compress/flate.(*dictDecoder).init (inline)
     19.27MB  8.42% 32.74%    19.27MB  8.42%  bytes.makeSlice
        15MB  6.55% 39.29%       15MB  6.55%  strings.(*Builder).WriteString (inline)
@@ -285,8 +285,8 @@ Our top now looks like:
     10.03MB  4.38% 49.60%    10.03MB  4.38%  bytes.(*Buffer).String
      9.50MB  4.15% 53.75%     9.50MB  4.15%  reflect.Value.MapIndex
      9.01MB  3.93% 57.68%     9.01MB  3.93%  net/http.(*http2clientConnReadLoop).handleResponse
-     8.50MB  3.72% 61.40%    24.50MB 10.71%  github.com/jjmschofield/GoCrawl/internal/app/writers.WriteLinks
-     6.07MB  2.65% 64.05%    35.20MB 15.38%  github.com/jjmschofield/GoCrawl/vendor/golang.org/x/net/html.(*Tokenizer).readByte
+     8.50MB  3.72% 61.40%    24.50MB 10.71%  github.com/jjmschofield/gocrawl/internal/app/writers.WriteLinks
+     6.07MB  2.65% 64.05%    35.20MB 15.38%  github.com/jjmschofield/gocrawl/vendor/golang.org/x/net/html.(*Tokenizer).readByte
 ```
 
 Next we reduce the amount of data we copy over channels by sending smaller objects and simplify our page and link structs to store url strings rather then full URL objects. This also has the benefit of simplifying our json marshal operation and in total we shave another ~10% and giving us a top like:
@@ -296,7 +296,7 @@ Showing nodes accounting for 133.78MB, 66.68% of 200.62MB total
 Dropped 67 nodes (cum <= 1MB)
 Showing top 10 nodes out of 122
       flat  flat%   sum%        cum   cum%
-   34.53MB 17.21% 17.21%    34.53MB 17.21%  github.com/jjmschofield/GoCrawl/vendor/golang.org/x/net/html.(*Tokenizer).Token
+   34.53MB 17.21% 17.21%    34.53MB 17.21%  github.com/jjmschofield/gocrawl/vendor/golang.org/x/net/html.(*Tokenizer).Token
    24.76MB 12.34% 29.55%    24.76MB 12.34%  compress/flate.(*dictDecoder).init (inline)
    16.25MB  8.10% 37.65%    16.25MB  8.10%  bytes.makeSlice
    12.60MB  6.28% 43.93%    12.60MB  6.28%  net/http.glob..func4
@@ -304,7 +304,7 @@ Showing top 10 nodes out of 122
     7.52MB  3.75% 53.41%     7.52MB  3.75%  bytes.(*Buffer).String
     7.03MB  3.50% 56.92%    31.79MB 15.84%  compress/flate.NewReader
     6.57MB  3.28% 60.19%    21.18MB 10.56%  encoding/json.Marshal
-    6.52MB  3.25% 63.44%    33.02MB 16.46%  github.com/jjmschofield/GoCrawl/internal/app/links.FromHrefs
+    6.52MB  3.25% 63.44%    33.02MB 16.46%  github.com/jjmschofield/gocrawl/internal/app/links.FromHrefs
     6.50MB  3.24% 66.68%     6.50MB  3.24%  net/http.(*http2Framer).readMetaFrame.func1
 ``` 
 
@@ -323,10 +323,10 @@ Dropped 201 nodes (cum <= 0.03GB)
 Showing top 10 nodes out of 67
       flat  flat%   sum%        cum   cum%
     4.44GB 76.26% 76.26%     4.44GB 76.26%  regexp.(*bitState).reset
-    0.16GB  2.78% 79.04%     0.16GB  2.79%  github.com/jjmschofield/GoCrawl-master/vendor/golang.org/x/net/html.(*Tokenizer).Token
-    0.10GB  1.77% 80.81%     0.10GB  1.77%  github.com/jjmschofield/GoCrawl-master/internal/app/links.ToLinkGroup
-    0.10GB  1.68% 82.49%     4.96GB 85.36%  github.com/jjmschofield/GoCrawl-master/internal/app/links.FromHrefs
-    0.09GB  1.60% 84.09%     0.17GB  2.97%  github.com/jjmschofield/GoCrawl-master/internal/app/crawl.createPages
+    0.16GB  2.78% 79.04%     0.16GB  2.79%  github.com/jjmschofield/gocrawl-master/vendor/golang.org/x/net/html.(*Tokenizer).Token
+    0.10GB  1.77% 80.81%     0.10GB  1.77%  github.com/jjmschofield/gocrawl-master/internal/app/links.ToLinkGroup
+    0.10GB  1.68% 82.49%     4.96GB 85.36%  github.com/jjmschofield/gocrawl-master/internal/app/links.FromHrefs
+    0.09GB  1.60% 84.09%     0.17GB  2.97%  github.com/jjmschofield/gocrawl-master/internal/app/crawl.createPages
     0.09GB  1.48% 85.57%     0.09GB  1.48%  regexp/syntax.(*compiler).inst (inline)
     0.09GB  1.46% 87.04%     0.09GB  1.46%  compress/flate.(*dictDecoder).init
     0.08GB  1.31% 88.35%     0.08GB  1.31%  strings.(*Builder).WriteString (inline)
@@ -341,16 +341,16 @@ Showing nodes accounting for 555.99MB, 70.58% of 787.69MB total
 Dropped 121 nodes (cum <= 3.94MB)
 Showing top 10 nodes out of 95
       flat  flat%   sum%        cum   cum%
-  183.56MB 23.30% 23.30%   184.06MB 23.37%  github.com/jjmschofield/GoCrawl/vendor/golang.org/x/net/html.(*Tokenizer).Token
+  183.56MB 23.30% 23.30%   184.06MB 23.37%  github.com/jjmschofield/gocrawl/vendor/golang.org/x/net/html.(*Tokenizer).Token
    73.24MB  9.30% 32.60%    73.24MB  9.30%  compress/flate.(*dictDecoder).init
    73.01MB  9.27% 41.87%    73.01MB  9.27%  strings.(*Builder).WriteString (inline)
    57.88MB  7.35% 49.22%    57.88MB  7.35%  bytes.makeSlice
    36.50MB  4.63% 53.85%    39.50MB  5.02%  net/url.parse
    33.66MB  4.27% 58.13%    94.86MB 12.04%  encoding/json.Marshal
-   26.62MB  3.38% 61.51%   226.14MB 28.71%  github.com/jjmschofield/GoCrawl/internal/app/links.FromHrefs
+   26.62MB  3.38% 61.51%   226.14MB 28.71%  github.com/jjmschofield/gocrawl/internal/app/links.FromHrefs
       25MB  3.17% 64.68%       25MB  3.17%  net/url.escape
       24MB  3.05% 67.73%       24MB  3.05%  crypto/md5.New (inline)
-   22.50MB  2.86% 70.58%   177.02MB 22.47%  github.com/jjmschofield/GoCrawl/internal/app/links.NewAbsLink
+   22.50MB  2.86% 70.58%   177.02MB 22.47%  github.com/jjmschofield/gocrawl/internal/app/links.NewAbsLink
 ```
 Check out the [graphviz](docs/pprof006.svg).
 

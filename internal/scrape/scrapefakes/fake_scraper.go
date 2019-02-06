@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"sync"
 
-	"github.com/jjmschofield/GoCrawl/internal/scrape"
+	"github.com/jjmschofield/gocrawl/internal/scrape"
 )
 
 type FakeScraper struct {

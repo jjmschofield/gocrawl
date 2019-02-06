@@ -4,8 +4,8 @@ package crawlfakes
 import (
 	"sync"
 
-	"github.com/jjmschofield/GoCrawl/internal/counters"
-	"github.com/jjmschofield/GoCrawl/internal/crawl"
+	"github.com/jjmschofield/gocrawl/internal/counters"
+	"github.com/jjmschofield/gocrawl/internal/crawl"
 )
 
 type FakeQueueWorker struct {

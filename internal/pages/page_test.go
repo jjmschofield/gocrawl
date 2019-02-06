@@ -2,7 +2,7 @@ package pages_test
 
 import (
 	"errors"
-	. "github.com/jjmschofield/GoCrawl/internal/pages"
+	. "github.com/jjmschofield/gocrawl/internal/pages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"io/ioutil"

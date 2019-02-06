@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/jjmschofield/GoCrawl/internal/crawl"
+	"github.com/jjmschofield/gocrawl/internal/crawl"
 	"log"
 	"net/url"
 	"time"

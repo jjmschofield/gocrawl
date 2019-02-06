@@ -1,5 +1,5 @@
-# GoCrawl
-GoCrawl is a gopher powered web crawler for the internets! It exists largely as a learning tool for the author, it's only there second attempt at a Go app so be kind!
+# gocrawl
+gocrawl is a gopher powered web crawler for the internets! It exists largely as a learning tool for the author, it's only there second attempt at a Go app so be kind!
 
 ![Cute gopher holding a network cable](./docs/network-gopher.png)
 

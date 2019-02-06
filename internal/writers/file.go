@@ -2,7 +2,7 @@ package writers
 
 import (
 	"encoding/json"
-	"github.com/jjmschofield/GoCrawl/internal/pages"
+	"github.com/jjmschofield/gocrawl/internal/pages"
 	"log"
 	"os"
 	"path"
