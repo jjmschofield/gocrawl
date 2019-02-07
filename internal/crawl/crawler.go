@@ -88,7 +88,6 @@ func (c *PageCrawler) resultReceiver() {
 	for result := range c.channels.Out {
 		c.caches.Crawled.Add(result.CrawledId)
 		c.counters.CrawlComplete.Add(1)
-		c.counters.Crawling.Sub(1)
 
 		c.enqueuePageGroup(result.Result.OutPages)
 
