@@ -1,7 +1,7 @@
 # gocrawl ![Cute gopher holding a network cable](docs/network-gopher.png)
 `gocrawl` is a gopher powered web crawler for the internets!
 
-`gocrawl` will happily make it's way through a website and gather all of the data into a JSONL (line delimited JSON) file for you to do what you wish with.
+`gocrawl` will happily make it's way through a website and gather all of the data into a JSONL (line delimited JSON) file for you to do with as you wish.
 
 It will capture a few things: 
 
