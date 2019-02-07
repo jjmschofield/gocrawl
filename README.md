@@ -328,7 +328,7 @@ $ gocrawl -dir=./demo/data -url=https://www.akqa.com
 
 ## Things gocrawl doesn't do but should...
 * Try and grab a `sitemap.xml` and enqueue everything in it to get started
-  * This would help us with small or badly linked sites (from our point of view) by making helping us achieve better parallelization
+  * This would help us with small or badly linked sites (from our point of view) by helping us achieve better parallelization
 * Pay attention to `robots.txt` 
   * This would help us avoid doing more work then we need to and would also be a bit more respectful to site owners   
 
