@@ -253,7 +253,7 @@ Showing top 10 nodes out of 129
     7.52MB  2.87% 58.69%     7.52MB  2.87%  bytes.(*Buffer).String
 ``` 
 
-Tokenizer is out of our control for now so we'll leave that alone for now - though maybe that scrape process could be made a bit more efficient?
+Tokenizer is out of our control for now so we'll leave that alone - though maybe that scrape process could be made a bit more efficient?
 
 Our links.ToLinkGroup seems like it is using more memory then it should, not surprising as it's doing lots of slice append operations. So lets start there:
 
@@ -297,7 +297,7 @@ Showing top 10 nodes out of 122
 
 And a graph that looks a like this [graphviz](docs/pprof005.svg).
 
-We'll also ditch writing out links separately as it seems like we are optimizing writes for a query we don't need yet - eg get me all telephone numbers on a site.
+We'll also ditch writing out links separately as it seems like we are optimizing writes for a query we don't need yet - eg get me all telephone numbers on a site. This will help to release some contention as we only have one writer running.
 
 Now that seems like quite a lot of optimizations! Let's see how our code performs against the incarnation we originally tried to use to scrape the BBC site. We can achieve this testing against a site that will make us work a bit harder but still give us a short run: [Citizens Advice Scotland](https://www.cas.org.uk).
 
