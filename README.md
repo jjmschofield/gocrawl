@@ -420,7 +420,7 @@ Entertainingly this isn't really due that much to the performance of the site, o
 
 Kate's blog posts are linked together by single page pagination only, which we always seem to hit late in the crawl. The net result is that towards the end of the crawl we loose all parallelism as `gocrawl` slowly makes its way through one page at a time.
 
-Of all the sites on test, this is pointing to the most important furture [optimization](./OPTIMIZATION.md), making use of a `sitemap.xml` to preload the crawler with a bunch of links will help us achieve more consistent parallelism with elongated site structures.  
+Of all the sites on test, this is pointing to the most important furture [optimization](./OPTIMIZATION.md), making use of a `sitemap.xml` to preload the crawler with a bunch of links which will help us achieve more consistent parallelism with elongated site structures.  
 
 ```
  Ran 3 samples:
@@ -455,7 +455,7 @@ Firstly, it is really slow but has a very fast cache when warmed up - not much w
 
 Secondly, the site features a large number of downloadable documents which, we discovered filtering out made a huge difference (93-96%) during [optimization](./OPTIMIZATION.md).
 
-Finally, the site has a very variable number of pages discovered - more investigation is required on this. Is it a very dynamic site? Are we finding broken pages? Do we have some race condition? Only questions - no answers right now...    
+Finally, the site has a very variable number of pages discovered - more investigation is required on this. Is it a very dynamic site? Are we finding broken pages? Do we have some race condition? Only questions right now...    
  
 ```
  Ran 3 samples:
@@ -514,7 +514,7 @@ The largest site in the test at 13.5k pages crawls blisteringly quickly to the p
 
 ## Contributing
 ### Tests
-We use the [ginkgo](https://github.com/onsi/ginkgo) test framework to achieve BDD tests of a similar vein to Jest / Jasmine / Mocha / Xunit. 
+We use the [ginkgo](https://github.com/onsi/ginkgo) test framework to achieve BDD tests of a similar vein to Jest / Jasmine / Mocha. 
 
 You can run the unit tests with coverage with:
 ```
