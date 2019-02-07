@@ -320,7 +320,7 @@ There are a lot of things you can do with this data, for example here is a direc
 
 This graph shows every relation between pages, it's pretty hard to read but it demonstrates some of the power of the data.
 
-If you want to get started with your own one (for a small site) of these there is a [demo](demo) HTML page you can spin up. Just run `gocrawl` to populate with data eg:
+If you want to get started with your own one of these there is a [demo](demo)(for small sites) you can spin up by just opening the HTML page. Just run `gocrawl` to populate with data eg:
 
 ```
 $ gocrawl -dir=./demo/data -url=https://www.akqa.com
