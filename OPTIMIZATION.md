@@ -200,8 +200,6 @@ End: 2019/02/04 11:42:28
 
 All in all, not bad. We got through 870k of pages in 2hr 40 mins and had 1.8M pages waiting in the wings to be crawled. At 80 pages per second we are well below what we witness at the start of the crawl.
 
-As a side note we wrote out some pretty huge files, about 5GB of page data and 20GB of link data.
-
 Considering that our machine has a whopping 16GB of 2666mhz DDR4 ram and a huge page file to boot however, these numbers actually seem somewhat low to me.
 
 ![Dancing gopher](./docs/icanfixthat.gif)
