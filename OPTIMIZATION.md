@@ -15,7 +15,7 @@ In this we are going to have to balance a few things:
 ## In The Beginning
 After standing up a basic scraper (for extracting links) and crawler (for queuing up and following pages) it was time to see if our concurrency model was operational. 
 
-We can predict that I/O should be the biggest bottleneck on performance - if we only get page at time even a small site will take an age to crawl. So we need to bring up parallel requests to make better use of resources availble to us - yet still maintain control over concurrency.
+We can predict that I/O should be the biggest bottleneck on performance - if we only scrape one page at time even a small site will take an age to crawl. So we need to bring up parallel requests to make better use of resources availble to us - yet still maintain control over concurrency.
 
 First we run a range of worker counts to asses if our concurrency model is working. We aren't doing any averaging of results here so the numbers are not accurate - we are just looking to get a feel for how our concurrency is performing.
 
