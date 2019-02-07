@@ -126,11 +126,11 @@ What's the fun of working in Go if you can't break out an animated gopher when t
 **UPDATE:**
 It was later discovered that: 
 1) [Citizens Advice Scotland](https://www.cas.org.uk) is very slow with a very fast cold cache
-2) Were omitting query params from page url normalization - query params are allowed in sitemaps according to sitemaps.org  
+2) We're omitting query params from page url normalization - query params are allowed in sitemaps according to sitemaps.org  
 3) Using a worker count of 1000 isn't very polite or even the most efficient number of workers  
 4) There is still a self evident benefit in this
 
-I'm not one to put a dancing gopher back in the box, so I returned to this after the optimizations below (and output writing) had been implemented.
+Not one to put a dancing gopher back in the box, I returned to this after the optimizations below (and output writing) had been implemented.
 
 So first a benchmark without the file filter:
 
