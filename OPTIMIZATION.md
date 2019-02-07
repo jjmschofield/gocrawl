@@ -359,3 +359,20 @@ Check out the [graphviz](docs/pprof006.svg).
 That's about 87% less memory allocations to get the same result.
 
 Does this mean that we will now be able to crawl websites that are 87% bigger?  ¯\_(ツ)_/¯ There is only one way to find out.
+
+![an octopus laying bricks](docs/octopus.gif)
+
+Letting this run for a while we hit our original point of processing 1,844,070 pages and survive handsomely. We seem to have stabilized at around about 10GB of memory usage, leaving us 15% plus the page file to go.
+
+Another success, we can definitely go further! 
+
+I killed the process at this point as we have but the poor [BBC](https://www.bbc.co.uk) under more then enough load for long enough.
+
+## How much is enough?
+At this point, it would probably be reasonable to give up and call it a wrap - but aren't you curious how far we can get?
+
+I was, I wanted to know if we could index the whole of the [BBC website](https://www.bbc.co.uk). Maybe it's curiosity or maybe it's misplaced vanity (we haven't really done anything special here - Go is doing all this for us) - but I had to know.
+
+In order to be a bit more responsible I decided to turn the number of concurrent connections right down to 25. It's going to take us a lot longer to get to the end, but we are definately being much much more polite to the beeb. 
+
+Running over night, lets see how far we can get.
