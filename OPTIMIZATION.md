@@ -169,7 +169,7 @@ With 500 workers, on the first run of this website we hit an out of virtual memo
 
 ![an out of cheese error](./docs/outofcheese.jpg)
 
-A part of this is inevitable. We are trying to write out pages we are done with as quickly as possible to disk so that the garbage collector can tidy up for us, however we have two in memory caches tracking our progress. Our in progress cache can explode if we can't get through the queue fast enough and our completed cache will grow indefinitely - eventually eating every bit of memory available. 
+A part of this is inevitable. We are trying to write out pages as quickly as possible to disk so that the garbage collector can tidy up for us, however we have two in memory caches tracking our progress. Our in progress cache can explode if we can't get through the queue fast enough and our completed cache will grow indefinitely - eventually eating every bit of memory available. 
 
 This leaves us a few options to move forwards:
 
