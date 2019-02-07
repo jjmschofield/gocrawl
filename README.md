@@ -1,4 +1,4 @@
-# gocrawl ![Cute gopher holding a network cable](./docs/network-gopher.png)
+# gocrawl ![Cute gopher holding a network cable](docs/network-gopher.png)
 `gocrawl` is a gopher powered web crawler for the internets!
 
 `gocrawl` will happily make it's way through a website and gather all of the data into a JSONL (line delimited JSON) file for you to do what you wish with.
@@ -49,9 +49,284 @@ Usage of gocrawl:
   -workers int
         Number of crawl workers to run (default 50)
 
+```
+
+## Results
+You will get results in a JSONL file called `pages.jsonl`. If you didn't specify `-dir` this will be in `./data/` relative to wherever you ran `gocrawl`
+
+A single page looks a bit like:
+```
+{
+  "id": "81146cd6051bbfc62fe29dac5b078e11",
+  "url": "https://monzo.com",
+  "outPages": {
+    "internal": {
+      "1242e724ade9b927626e0160b06292a2": "https://monzo.com/press",
+      "28ea4e4813c2a033e4e0971a50cee585": "https://monzo.com/legal/terms-and-conditions",
+      "3456cc237ec3a4e5bc13f42cdb2670a2": "https://monzo.com/download",
+      "563051fd7215aa58591a05afd3bd6c3e": "https://monzo.com/careers",
+      "5a54d0d0e550a83a534c3cee45021b41": "https://monzo.com/-play-store-redirect",
+      "5d82719fab0026f709c46acf892c2f32": "https://monzo.com/community",
+      "70d7b336b5c9b1a879913b322d0eb0ea": "https://monzo.com/features/overdrafts",
+      "7be3d6b130f2911636007962c08ba57d": "https://monzo.com/blog",
+      "81146cd6051bbfc62fe29dac5b078e11": "https://monzo.com",
+      "910e1ef1fb9a8636501269edd8deffc5": "https://monzo.com/legal/privacy-policy",
+      "9730974b7ed77209da6ab00fbd3332e9": "https://monzo.com/legal/cookie-policy",
+      "a2b33f749fedc804add1f7e2e834a3d0": "https://monzo.com/cdn-cgi/l/email-protection",
+      "ae4e2c3e2419f7784d1c66d49f87d4cc": "https://monzo.com/features/travel",
+      "bcb6ea59d7d8f64730640addfe8bb8c3": "https://monzo.com/about",
+      "be93233b884615d2c31fba361565459b": "https://monzo.com/features/switch",
+      "c5384afe3366bfdbe3111a09fac556b6": "https://monzo.com/legal/fscs-information",
+      "d337313b51b94e92a7e1bd4e9ba2e2f3": "https://monzo.com/tone-of-voice",
+      "d39543e6b964b23ff552d9d6d478643c": "https://monzo.com/transparency",
+      "d3aada3f1e292a1c951ee77a9bb8a254": "https://monzo.com/community/making-monzo",
+      "d65f5efe28855c0ab6aa546c6ede407b": "https://monzo.com/blog/how-money-works",
+      "decce6152e5ae74e46254fe14b24081d": "https://monzo.com/faq",
+      "ecca2d96ec11476c91aa2d2b50404c37": "https://monzo.com/features/google-pay",
+      "fbb1d7a29f1dd568760180db067ea520": "https://monzo.com/features/apple-pay"
+    }
+  },
+  "outLinks": {
+    "05ef754dd277a008bc6dfdba10a65341": {
+      "id": "05ef754dd277a008bc6dfdba10a65341",
+      "toUrl": "https://twitter.com/monzo",
+      "fromUrl": "https://monzo.com",
+      "type": "external"
+    },
+    "079661da7b74461c5e19945d415bb57e": {
+      "id": "079661da7b74461c5e19945d415bb57e",
+      "toUrl": "https://www.youtube.com/monzobank",
+      "fromUrl": "https://monzo.com",
+      "type": "external"
+    },
+    "1242e724ade9b927626e0160b06292a2": {
+      "id": "1242e724ade9b927626e0160b06292a2",
+      "toUrl": "https://monzo.com/press",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "2545906c28821b13c74d484b824ac20c": {
+      "id": "2545906c28821b13c74d484b824ac20c",
+      "toUrl": "https://www.linkedin.com/company/monzo-bank",
+      "fromUrl": "https://monzo.com",
+      "type": "external"
+    },
+    "28ea4e4813c2a033e4e0971a50cee585": {
+      "id": "28ea4e4813c2a033e4e0971a50cee585",
+      "toUrl": "https://monzo.com/legal/terms-and-conditions",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "3456cc237ec3a4e5bc13f42cdb2670a2": {
+      "id": "3456cc237ec3a4e5bc13f42cdb2670a2",
+      "toUrl": "https://monzo.com/download",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "563051fd7215aa58591a05afd3bd6c3e": {
+      "id": "563051fd7215aa58591a05afd3bd6c3e",
+      "toUrl": "https://monzo.com/careers",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "5a54d0d0e550a83a534c3cee45021b41": {
+      "id": "5a54d0d0e550a83a534c3cee45021b41",
+      "toUrl": "https://monzo.com/-play-store-redirect",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "5d82719fab0026f709c46acf892c2f32": {
+      "id": "5d82719fab0026f709c46acf892c2f32",
+      "toUrl": "https://monzo.com/community",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "635db89b9ce7485b2e19458a7af7b9ab": {
+      "id": "635db89b9ce7485b2e19458a7af7b9ab",
+      "toUrl": "https://web.monzo.com",
+      "fromUrl": "https://monzo.com",
+      "type": "external"
+    },
+    "6c051e3b66551d656f56794784870fa7": {
+      "id": "6c051e3b66551d656f56794784870fa7",
+      "toUrl": "https://www.thetimes.co.uk/article/tom-blomfield-the-man-who-made-monzo-g8z59dr8n",
+      "fromUrl": "https://monzo.com",
+      "type": "external"
+    },
+    "6deb00a2eae3bcf79e5989d4b55d99b1": {
+      "id": "6deb00a2eae3bcf79e5989d4b55d99b1",
+      "toUrl": "https://monzo.com/cdn-cgi/l/email-protection#7018151c00301d1f1e0a1f5e131f1d",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "70adfde50f4666cfda9eb4ac800dea64": {
+      "id": "70adfde50f4666cfda9eb4ac800dea64",
+      "toUrl": "https://www.instagram.com/monzo",
+      "fromUrl": "https://monzo.com",
+      "type": "external"
+    },
+    "70d7b336b5c9b1a879913b322d0eb0ea": {
+      "id": "70d7b336b5c9b1a879913b322d0eb0ea",
+      "toUrl": "https://monzo.com/features/overdrafts",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "7be3d6b130f2911636007962c08ba57d": {
+      "id": "7be3d6b130f2911636007962c08ba57d",
+      "toUrl": "https://monzo.com/blog",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "823c8ed14c5e75c6464f590c2fd0edbd": {
+      "id": "823c8ed14c5e75c6464f590c2fd0edbd",
+      "toUrl": "https://www.telegraph.co.uk/personal-banking/current-accounts/monzo-atom-revolut-starling-everything-need-know-digital-banks/",
+      "fromUrl": "https://monzo.com",
+      "type": "external"
+    },
+    "8c6672a993504cbebbe653e547cd5d09": {
+      "id": "8c6672a993504cbebbe653e547cd5d09",
+      "toUrl": "https://www.theguardian.com/technology/2017/dec/17/monzo-facebook-of-banking",
+      "fromUrl": "https://monzo.com",
+      "type": "external"
+    },
+    "910e1ef1fb9a8636501269edd8deffc5": {
+      "id": "910e1ef1fb9a8636501269edd8deffc5",
+      "toUrl": "https://monzo.com/legal/privacy-policy",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "9730974b7ed77209da6ab00fbd3332e9": {
+      "id": "9730974b7ed77209da6ab00fbd3332e9",
+      "toUrl": "https://monzo.com/legal/cookie-policy",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "a9d6b806b24f7d62ea76504a1eca9436": {
+      "id": "a9d6b806b24f7d62ea76504a1eca9436",
+      "toUrl": "https://monzo.com/cdn-cgi/l/email-protection#0f676a637f4f6260617560216c6062",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "ae4e2c3e2419f7784d1c66d49f87d4cc": {
+      "id": "ae4e2c3e2419f7784d1c66d49f87d4cc",
+      "toUrl": "https://monzo.com/features/travel",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "b2af5f82028b38bb897547708d7b7a67": {
+      "id": "b2af5f82028b38bb897547708d7b7a67",
+      "toUrl": "https://www.facebook.com/monzobank",
+      "fromUrl": "https://monzo.com",
+      "type": "external"
+    },
+    "b7d9de4bac141413c1901fd690de35f6": {
+      "id": "b7d9de4bac141413c1901fd690de35f6",
+      "toUrl": "https://monzo.com/",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "bcb6ea59d7d8f64730640addfe8bb8c3": {
+      "id": "bcb6ea59d7d8f64730640addfe8bb8c3",
+      "toUrl": "https://monzo.com/about",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "be93233b884615d2c31fba361565459b": {
+      "id": "be93233b884615d2c31fba361565459b",
+      "toUrl": "https://monzo.com/features/switch",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "c5384afe3366bfdbe3111a09fac556b6": {
+      "id": "c5384afe3366bfdbe3111a09fac556b6",
+      "toUrl": "https://monzo.com/legal/fscs-information",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "c7da1ee3bee5489ac02cd81fcbcf1d4a": {
+      "id": "c7da1ee3bee5489ac02cd81fcbcf1d4a",
+      "toUrl": "https://monzo.com/community",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "d337313b51b94e92a7e1bd4e9ba2e2f3": {
+      "id": "d337313b51b94e92a7e1bd4e9ba2e2f3",
+      "toUrl": "https://monzo.com/tone-of-voice",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "d39543e6b964b23ff552d9d6d478643c": {
+      "id": "d39543e6b964b23ff552d9d6d478643c",
+      "toUrl": "https://monzo.com/transparency",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "d3aada3f1e292a1c951ee77a9bb8a254": {
+      "id": "d3aada3f1e292a1c951ee77a9bb8a254",
+      "toUrl": "https://monzo.com/community/making-monzo",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "d65f5efe28855c0ab6aa546c6ede407b": {
+      "id": "d65f5efe28855c0ab6aa546c6ede407b",
+      "toUrl": "https://monzo.com/blog/how-money-works",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "decce6152e5ae74e46254fe14b24081d": {
+      "id": "decce6152e5ae74e46254fe14b24081d",
+      "toUrl": "https://monzo.com/faq",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "dfc645d45e30aaf47f9a012daed000c4": {
+      "id": "dfc645d45e30aaf47f9a012daed000c4",
+      "toUrl": "https://itunes.apple.com/gb/app/mondo/id1052238659",
+      "fromUrl": "https://monzo.com",
+      "type": "external"
+    },
+    "ecca2d96ec11476c91aa2d2b50404c37": {
+      "id": "ecca2d96ec11476c91aa2d2b50404c37",
+      "toUrl": "https://monzo.com/features/google-pay",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    },
+    "ecf1bfbf83d9e9dd15c4f1cd7710eec1": {
+      "id": "ecf1bfbf83d9e9dd15c4f1cd7710eec1",
+      "toUrl": "https://www.standard.co.uk/tech/monzo-prepaid-card-current-accounts-challenger-bank-a3805761.html",
+      "fromUrl": "https://monzo.com",
+      "type": "external"
+    },
+    "ed415fae124bd226ed8ab99270e31b00": {
+      "id": "ed415fae124bd226ed8ab99270e31b00",
+      "toUrl": "https://www.fscs.org.uk/",
+      "fromUrl": "https://monzo.com",
+      "type": "external"
+    },
+    "fbb1d7a29f1dd568760180db067ea520": {
+      "id": "fbb1d7a29f1dd568760180db067ea520",
+      "toUrl": "https://monzo.com/features/apple-pay",
+      "fromUrl": "https://monzo.com",
+      "type": "internal"
+    }
+  },
+  "error": null
+}
+```
+
+There are a lot of things you can do with this data, for example here is a directed graph for the whole of the [Monzo](https://monzo.com) website.
+
+![Confusing circular graph](docs/monzomap.png)
+
+This graph shows every relation between pages, it's pretty hard to read but it demonstrates some of the power of the data.
+
+If you want to get started with your own one (for a small site) of these there is a [demo](demo) HTML page you can spin up. Just run `gocrawl` to populate with data eg:
+
+```
+$ gocrawl -dir=./demo/data -url=https://www.akqa.com
 ``` 
 
-## Things gocrawl doesn't do but should
+## Things gocrawl doesn't do but should...
 * Try and grab a `sitemap.xml` and enqueue everything in it to get started
   * This would help us with small or badly linked sites (from our point of view) by making helping us achieve better parallelization
 * Pay attention to `robots.txt` 

@@ -12,22 +12,12 @@ In this we are going to have to balance a few things:
 * stability - especially for large sites
 * code readability and maintainability
 
-As much as I would like to claim omnipotence and perfect foresight, many of our optimizations occurred during creating the code itself and often in a less then 100% scientific manner. If everything sounds amazing so far - hold on to your hats as the noob is in coming:
-
-![A single duck jumping off a cliff, being watched by other ducks](./docs/leroy.jpg)
-
-The following may read like a story, a stream of consciousness or splurge of diarrhea - this determination is completely up to you dear reader, but I'll do my best to keep it entertaining. 
-
-Unfortunately for you - my actual comedic level is low, so I will liberally apply gifs to keep you awake. Here is a gopher running around confused. 
-
-![Gopher Watching a film](./docs/demo.gif)
-
 ## In The Beginning
 After standing up a basic scraper (for extracting links) and crawler (for queuing up and following pages) it was time to see if our concurrency model was operational. 
 
-We can easily predict that I/O should be the biggest bottleneck on performance here - if we only go one web page at time even a small site will take an age to crawl. So we need to bring up parallel requests yet still maintain control over concurrency.
+We can predict that I/O should be the biggest bottleneck on performance - if we only get page at time even a small site will take an age to crawl. So we need to bring up parallel requests to make better use of resources availble to us - yet still maintain control over concurrency.
 
-First we run a range of worker counts to asses if our concurrency model is working. We aren't doing any averaging of results here so the numbers are not really to be trusted - we are just looking to get a feel for what is going on.
+First we run a range of worker counts to asses if our concurrency model is working. We aren't doing any averaging of results here so the numbers are not accurate - we are just looking to get a feel for how our concurrency is performing.
 
 | Site  | Pages | 1 Worker | 10 Workers | 25 Workers  | 50 Workers | 100 Workers | 1000 Workers | 10000 Workers |
 |---|---|---|---|---|---|---|---|---|
@@ -41,9 +31,9 @@ The results are encouraging - we definitely have parallel operations taking plac
 
 Lets not get too excited though, at this stage we are keeping all the pages in memory before moving on to write out the results and these websites are pretty tiny.
 
-Entertainingly our performance seems to be limited more by the number of urls we have discovered then anything else. For example when we hit empty pages like http://monzo.com/blog/authors/kate-hollowood/11 we seem to only discover one link each time (the next link) - which means that we only end up using a couple of workers in parallel.
+Entertainingly our performance seems to be limited more by the number of urls we have discovered then anything else. For example when we hit empty pages like [this](http://monzo.com/blog/authors/kate-hollowood/11) we seem to only discover one link each time (the next link) - which means that we only end up using a couple of workers in parallel.
 
-To get some real performance insights we need to really stress the solution. When we crawl a big complex site like https://www.bbc.co.uk for a short time we get some interesting results:
+To get some real performance insights we need to really stress the solution. When we crawl a big complex site like [The BBC](https://www.bbc.co.uk) for a short time we get some interesting results:
 
 * CPU sits around 30% utilization
 * Memory eventually gets exceeded and the system starts paging
@@ -58,11 +48,10 @@ So some observations:
 * For small sites - we hit a point where the number of parallel workers doesn't matter so much, or worse degrades performance due to resource allocation times 
 * We are blowing up memory
     * This is largely because we are storing everything in memory and not streaming out our results
-    * Paging doesn't seem to hurt us (CPU doesn't go through the roof) - but then we are using a physically attached SSD
+    * Paging oddly doesn't seem to hurt us that much (CPU doesn't go through the roof) - but then we are using a physically attached SSD
     * This will cause problems on a VM where memory is more expensive and page file may not be available
-    * The use of caches and streaming results to storage (rather then hanging on to them) should clear this up
-    * We could probably be more efficient with memory we are using by keeping only what we need
-    * If we changed the rule about only indexing internal pages - or hit a really bit website for a long time - chances are we are going to fall over
+    * The use of caches and streaming results to storage (rather then hanging on to them) should clear up a lot of this
+    * We could probably be more efficient with memory we are using by keeping only what we need and being mindful of the operations we are doing
 
 This leaves us with a couple of things to think about
 
@@ -174,11 +163,11 @@ Go go:
 go run cmd/crawl.go -url=https://www.bbc.co.uk -workers=500
 ```
 
-![coffee cup saying](./docs/brb.gif)
+![coffee cup saying brb](./docs/brb.gif)
 
 With 500 workers, on the first run of this website we hit an out of virtual memory exception - meaning that we managed to consume all of the available memory and page file! Whoops.
 
-![coffee cup saying](./docs/outofcheese.jpg)
+![an out of cheese error](./docs/outofcheese.jpg)
 
 A part of this is inevitable. We are trying to write out pages we are done with as quickly as possible to disk so that the garbage collector can tidy up for us, however we have two in memory caches tracking our progress. Our in progress cache can explode if we can't get through the queue fast enough and our completed cache will grow indefinitely - eventually eating every bit of memory available. 
 
@@ -231,7 +220,7 @@ There was only one thing going through my mind when I saw this:
 
 ![Holy Smokes Batman](docs/holy-smokes-batman.jpg)
 
-The majority of memory being allocated was no where near where I thought it would be - instead it looks like our isFile check is exploding due to regex in the standard library.
+The majority of memory being allocated was no where near where I thought it would be - instead it looks like our isFile check is exploding due to a regex creation in the standard library.
 
 This function looks a little bit like:
 
@@ -243,7 +232,7 @@ func isFile(testUrl url.URL) bool {
 }
 ``` 
 
-We'd previously optimized this due to regex performance on a big old group search, but it still had problems! Creating the matcher as a single var at the package level gives us the following [graphviz](docs/pprof003.svg).
+We'd previously optimized this due to regex performance on a big old group search, but it still had problems! Creating the matcher as a constant var at the package level gives us the following [graphviz](docs/pprof003.svg).
 
 With a single line change, we've achieved 1GB reduction in memory usage for this very small website - nearly an 80% reduction in memory allocation. 
 
@@ -312,7 +301,7 @@ And a graph that looks a like this [graphviz](docs/pprof005.svg).
 
 We'll also ditch writing out links separately as it seems like we are optimizing writes for a query we don't need yet - eg get me all telephone numbers on a site.
 
-Now that seems like quite a lot of optimizations! Let's see how our code performs against the incarnation we originally tried to use to scrape the BBC site by testing against a site that will make us work a bit harder but still give us a short run: [Citizens Advice Scotland](https://www.cas.org.uk).
+Now that seems like quite a lot of optimizations! Let's see how our code performs against the incarnation we originally tried to use to scrape the BBC site. We can achieve this testing against a site that will make us work a bit harder but still give us a short run: [Citizens Advice Scotland](https://www.cas.org.uk).
 
 We hit the site once to warm it's cache and then hit it with both code variants in quick succession.
 
@@ -362,9 +351,9 @@ Does this mean that we will now be able to crawl websites that are 87% bigger?  
 
 ![an octopus laying bricks](docs/octopus.gif)
 
-Letting this run for a while we hit our original point of processing 1,844,070 pages and survive handsomely. We seem to have stabilized at around about 10GB of memory usage, leaving us 15% plus the page file to go.
+Letting this run for a while we hit our original point of processing 1,844,070 pages and survived handsomely. We seem to have stabilized at around about 10GB of memory usage, leaving us 15% plus the page file to go.
 
-Another success, we can definitely go further! 
+Another success, but we can definitely go further! 
 
 I killed the process at this point as we have but the poor [BBC](https://www.bbc.co.uk) under more then enough load for long enough.
 
@@ -373,6 +362,6 @@ At this point, it would probably be reasonable to give up and call it a wrap - b
 
 I was, I wanted to know if we could index the whole of the [BBC website](https://www.bbc.co.uk). Maybe it's curiosity or maybe it's misplaced vanity (we haven't really done anything special here - Go is doing all this for us) - but I had to know.
 
-In order to be a bit more responsible I decided to turn the number of concurrent connections right down to 25. It's going to take us a lot longer to get to the end, but we are definately being much much more polite to the beeb. 
+In order to be a bit more responsible I decided to turn the number of concurrent connections right down to 25. It's going to take us a lot longer to get to the end, but we are definitely being much much more polite to the beeb. 
 
-Running over night, lets see how far we can get.
+Running this again over night, lets see how far we can get... TBC
