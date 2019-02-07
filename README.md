@@ -239,9 +239,7 @@ The largest site in the test at 13.5k pages crawls blisteringly quickly to the p
 
 ## Contributing
 ### Tests
-I've used the [ginkgo](https://github.com/onsi/ginkgo) test framework here. I understand this is contentions and not 100% idiomatic - however coming from Jest / Jasmine / Mocha / Xunit it felt the most natural. 
-
-Also I was struggling with how to do BDD well with the standard test library - I'm sure you can, I just haven't worked it out yet :) If you know please share the wealth!  
+We use the [ginkgo](https://github.com/onsi/ginkgo) test framework to achieve BDD tests of a similar vein to Jest / Jasmine / Mocha / Xunit. 
 
 You can run the unit tests with coverage with:
 ```
@@ -258,7 +256,7 @@ ok      github.com/jjmschofield/gocrawl/internal/writers        (cached)        
 
 There are some coverage gaps there - so feel free to help raise it if you wish :)
 
-I've also used [counterfeiter](https://github.com/maxbrunsfeld/counterfeiter) to provide fake generation. I'm still in two minds as to whether or not this is helping.
+We've also used [counterfeiter](https://github.com/maxbrunsfeld/counterfeiter) to provide fake generation. I'm still in two minds as to whether or not this is helping or hurting.
 
 If you get failing tests after changing an interface regenerate the fakes with the following:
 
