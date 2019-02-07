@@ -130,7 +130,7 @@ It was later discovered that:
 3) Using a worker count of 1000 isn't very polite or even the most efficient number of workers  
 4) There is still a self evident benefit in this
 
-Not one to put a dancing gopher back in the box, I returned to this after the optimizations below (and output writing) had been implemented.
+Not one to put a dancing gopher back in the box, I returned to this after the optimizations below had been implemented.
 
 So first a benchmark without the file filter:
 
