@@ -1,6 +1,7 @@
 package crawl
 
 import (
+	"github.com/go-redis/redis"
 	"github.com/jjmschofield/gocrawl/internal/caches"
 	"github.com/jjmschofield/gocrawl/internal/counters"
 	"github.com/jjmschofield/gocrawl/internal/pages"
@@ -170,8 +171,8 @@ func NewPageCrawler(config Config) PageCrawler {
 }
 
 func NewDefaultPageCrawler(workerCount int, filePath string) PageCrawler {
-	crawledCache := caches.NewStrThreadSafe()
-	processingCache := caches.NewStrThreadSafe()
+	crawledCache := caches.NewStr()
+	processingCache := caches.NewStr()
 
 	config := Config{
 		Caches: Caches{
@@ -187,3 +188,37 @@ func NewDefaultPageCrawler(workerCount int, filePath string) PageCrawler {
 
 	return crawler
 }
+
+func NewRedisPageCrawler(workerCount int, filePath string, redisAddr string) PageCrawler {
+	options := &redis.Options{
+		Addr:     redisAddr,
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	}
+
+	client := redis.NewClient(options)
+	client.FlushAll()
+
+	err := client.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	crawledCache := caches.NewStrRedis("crawled", options)
+	processingCache := caches.NewStrRedis("processing", options)
+
+	config := Config{
+		Caches: Caches{
+			Crawled:    &crawledCache,
+			Processing: &processingCache,
+		},
+		Worker:      &Worker{Scraper: scrape.PageScraper{}},
+		WorkerCount: workerCount,
+		Writer:      &writers.FileWriter{FilePath: filePath},
+	}
+
+	crawler := NewPageCrawler(config)
+
+	return crawler
+}
+

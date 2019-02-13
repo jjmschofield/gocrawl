@@ -13,6 +13,7 @@ func main() {
 	crawlUrlRaw := flag.String("url", "https://monzo.com", "an absolute url, including protocol and hostname")
 	workerCount := flag.Int("workers", 50, "Number of crawl workers to run")
 	outFilePath := flag.String("dir", "data", "A relative file path to send results to")
+	redisAddr := flag.String("redis", "", "An optional redis address to make use of redis rather then in memory queues and caches eg: localhost:6379")
 
 	flag.Parse()
 
@@ -23,7 +24,7 @@ func main() {
 	}
 	start := time.Now()
 
-	counters := Crawl(*crawlUrl, *workerCount, *outFilePath)
+	counters := Crawl(*crawlUrl, *workerCount, *outFilePath, *redisAddr)
 
 	end := time.Now()
 
@@ -31,8 +32,15 @@ func main() {
 	fmt.Printf(" Discovered: %v, \n Crawled: %v \n Parallel Crawls Peak: %v \n Scrape Queue Peak: %v \n Processing Peak: %v \n", counters.Discovered.Count(), counters.CrawlComplete.Count(), counters.Crawling.Peak(), counters.CrawlsQueued.Peak(), counters.Processing.Peak())
 }
 
-func Crawl(crawlUrl url.URL, workerCount int, outFilePath string) crawl.Counters {
-	crawler := crawl.NewDefaultPageCrawler(workerCount, outFilePath)
+func Crawl(crawlUrl url.URL, workerCount int, outFilePath string, redisAddr string) crawl.Counters {
+	var crawler crawl.PageCrawler
+
+	if len(redisAddr) < 1 {
+		crawler = crawl.NewDefaultPageCrawler(workerCount, outFilePath)
+	} else{
+		crawler = crawl.NewRedisPageCrawler(workerCount, outFilePath, redisAddr)
+	}
+
 	counters := crawler.Crawl(crawlUrl)
 	return counters
 }

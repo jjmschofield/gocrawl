@@ -6,13 +6,13 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("StrThreadSafe", func() {
+var _ = Describe("Str", func() {
 	var (
-		underTest StrThreadSafe
+		underTest Str
 	)
 
 	BeforeEach(func() {
-		underTest = NewStrThreadSafe()
+		underTest = NewStr()
 	})
 
 	Describe("Add", func(){
@@ -72,7 +72,7 @@ var _ = Describe("StrThreadSafe", func() {
 			})
 		})
 
-		Context("When the provided string is in the cache", func(){
+		Context("When the provided string is not in the cache", func(){
 			It("Should return false", func(){
 				// Arrange
 				expectedStr := "some string"

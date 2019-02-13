@@ -41,14 +41,14 @@ $ gocrawl -url=https://<your website>
 Everyone likes to have options, here are yours:
 ```
 $ gocrawl -h
-Usage of gocrawl:
-  -dir string
-        A file path to send results to (default "data")
+-dir string
+        A relative file path to send results to (default "data")
+  -redis string
+        An optional redis address to make use of redis rather then in memory queues and caches eg: localhost:6379
   -url string
         an absolute url, including protocol and hostname (default "https://monzo.com")
   -workers int
         Number of crawl workers to run (default 50)
-
 ```
 
 ## Results
@@ -336,6 +336,8 @@ $ gocrawl -dir=./demo/data -url=https://www.akqa.com
 The main limiting factor for the size of a site is memory - currently we keep a track of where we have been and where we are going inside in memory caches.
 
 You'll find that the [PageCrawler](internal/crawl/crawler.go) lets you inject in these cashes - satisfy the [ThreadSafeCache interface](internal/caches/thread_safe.go) and swap them out for something backed by disk or magic cloud memory and you'll go further.
+
+By default we have provided an example of a redis cache (unauthenticated) which is available from the command line. You'll need a redis server for this - the included `docker-compose.yml` can get you started.
 
 ## I heard you wanted to query lots of data...
 `gocrawl` itself intentionally doesn't waste resources on how you may want to query the data later.

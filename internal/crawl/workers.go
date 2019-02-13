@@ -15,7 +15,7 @@ type QueueWorker interface {
 
 type WorkerJob struct {
 	Id  string
-	URL url.URL
+	URL url.URL // TODO - change to href
 }
 
 type WorkerResult struct {
@@ -33,6 +33,8 @@ type Worker struct {
 	Scraper scrape.Scraper
 }
 
+// TODO - remove worker group
+// TODO - remove writer
 func (w *Worker) Start(chans WorkerChannels, queueCounter *counters.AtomicInt64, workCounter *counters.AtomicInt64, wg *sync.WaitGroup) {
 	defer wg.Done()
 

@@ -362,4 +362,62 @@ I was, I wanted to know if we could index the whole of the [BBC website](https:/
 
 In order to be a bit more responsible I decided to turn the number of concurrent connections right down to 25. It's going to take us a lot longer to get to the end, but we are definitely being much much more polite to the beeb. 
 
-Running this again over night, lets see how far we can get... TBC
+Running this again over night, lets see how far we can get...
+
+## We want more!
+After some considerable time (36 hours ish) we had discovered nearly 6m pages, crawled 2.5m of them and had 3.5m left to go through. I manually killed the process here as... well... I wanted to use my PC for something else!
+
+At this stage our memory usage has exceeded physical memory and is making use of virtual memory again. We might make it to the end of the site, but it's starting to get dicey again.
+
+Now is a time to have a deeper think about what is occurring. 
+
+Our caches are made up of MD5 hashes (16 bytes) plus a bool (1 byte) plus the overhead of the map.
+
+Let's imagine that we have 10GB of memory for cache entries only (not including the rest of the process or OS), that's 1,073,741,824 bytes. 
+
+In *theory* we should be able to jam something like 63,161,283 ids into our combined aches (without memory compression etc). We obviously haven't hit these limits at all with what we are doing.
+
+The actual exact numbers are not so important - what is important is that a picture is forming that maybe our caches are not gobbling up all that space.
+
+Let's turn our head slightly and look at the specifics of how our queue mechanism works.
+
+* We fan out to scrape known pages
+* Results get put onto the worker out chanel
+* We fan in to enqueue new pages
+* New pages get put onto the worker in channel 
+
+If our workers can't push work out, they can't except work in. If our consuming result worker can't push work into workers it can't accept work out form them.
+
+DEADLOCK!
+
+Previously this was solved by spawning a goroutine to wait for a worker to be able to pickup the crawl request and process it. Goroutines are cheap and spring up fast right? They are like magic...
+
+Well, obviously they are not like magic and they are not free. When we have 3.5m pages in our queue - that means we have 3.5m goroutines hanging out. Being contexted switched... each taking up 4kb of memory!
+
+4kb x 3.5m = 14GB <- this is a seriously big deal and very wasteful of resources.
+
+So we could use buffered channels to achieve a solid result here - however buffered channels are fixed in size - how could we possibly know how big these channels would need to be? Surely if we set them too low we would still end up in a deadlock.
+
+So how can we handle it? A solid approach to this problem is a stack or queue (we got a bit excited learning about goroutines and channels) so we should return to basics. 
+
+Now, we could use a slice to achieve these ends - however (unless I'm mistaken) our appends are going to result in these potentially massive slices being copied. We don't want that.
+
+As we don't really care about order (either LIFO or FIFO) we could just put everything into a hash map and return a random value when popping - this seems like a reasonable and very fast solution, but we are still bound by the memory limitations of a single machine.
+
+We've previously considered breaking out some sort of disk backed cache (like a database) - but based on what we know now, it's likely that an in memory cache which supports queuing might be a good next step. Using something like this will help us in that:
+
+* We will be spawning a far lower number of goroutines
+* We will move closer to having persistence (eg the ability to pause, resume and recover from a panicked crawl)
+* We will be moving closer towards a solution which we could maybe distribute amongst multiple instances 
+
+This will come at a cost however, whilst fast in memory caches still come with an I/O cost. Our smaller websites are going to crawl more slowly, but as we know - going fast is pointless if we can't make it to the end.
+
+Redis seems to support everything we might want. They list that 1M small keys should take only 85mb of memory, which sounds great. 
+
+We can use their Set structure to build up caches with O(1) performance up to 4 billion records. This sounds like a good option for our cache.
+
+We can use their List structure to build a queue or stack.  The list is marked as O(N) performance in their doc's unless you want to access the extremes of the list (which is exactly what we want for a queue or stack).
+
+So first things first we will extend out a cache based on redis, we predicted this and left a clear extension point. Easy peasy.
+
+Altering the internals of the crawler is not quite so easy however... we are going to want a new

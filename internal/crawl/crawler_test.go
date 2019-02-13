@@ -176,8 +176,8 @@ var _ = Describe("PageCrawler", func() {
 var _ = Describe("NewPageCrawler", func() {
 	It("should construct a page crawler using the provided config", func() {
 		// Arrange
-		crawledCache := caches.NewStrThreadSafe()
-		processingCache := caches.NewStrThreadSafe()
+		crawledCache := caches.NewStr()
+		processingCache := caches.NewStr()
 
 		expected := Config{
 			Caches: Caches{
@@ -203,8 +203,8 @@ var _ = Describe("NewDefaultPageCrawler", func() {
 		const expectedWorkerCount = 10
 		const expectedOutputPath = "some/file/path"
 
-		crawledCache := caches.NewStrThreadSafe()
-		processingCache := caches.NewStrThreadSafe()
+		crawledCache := caches.NewStr()
+		processingCache := caches.NewStr()
 
 		expected := Config{
 			Caches: Caches{
@@ -225,8 +225,8 @@ var _ = Describe("NewDefaultPageCrawler", func() {
 })
 
 func createConfig() (config Config, workerFake *crawlfakes.FakeQueueWorker, writerFake *writersfakes.FakeWriter) {
-	crawledCache := caches.NewStrThreadSafe()
-	processingCache := caches.NewStrThreadSafe()
+	crawledCache := caches.NewStr()
+	processingCache := caches.NewStr()
 
 	workerFake = createFakeWorker()
 	fakeWriter := &writersfakes.FakeWriter{}

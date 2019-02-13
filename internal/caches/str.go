@@ -2,42 +2,42 @@ package caches
 
 import "sync"
 
-type StrThreadSafe struct {
+type Str struct {
 	cacheMutex sync.Mutex
 	cache      map[string]bool
 }
 
-func NewStrThreadSafe() StrThreadSafe {
-	return StrThreadSafe{
+func NewStr() Str {
+	return Str{
 		cache: make(map[string]bool),
 	}
 }
 
-func (strCache *StrThreadSafe) Add(str string) {
-	defer strCache.cacheMutex.Unlock()
-	strCache.cacheMutex.Lock()
+func (c *Str) Add(str string) {
+	defer c.cacheMutex.Unlock()
+	c.cacheMutex.Lock()
 
-	strCache.cache[str] = true
+	c.cache[str] = true
 }
 
-func (strCache *StrThreadSafe) Remove(str string) {
-	defer strCache.cacheMutex.Unlock()
-	strCache.cacheMutex.Lock()
+func (c *Str) Remove(str string) {
+	defer c.cacheMutex.Unlock()
+	c.cacheMutex.Lock()
 
-	delete(strCache.cache, str)
+	delete(c.cache, str)
 }
 
-func (strCache *StrThreadSafe) Has(str string) bool {
-	defer strCache.cacheMutex.Unlock()
-	strCache.cacheMutex.Lock()
+func (c *Str) Has(str string) bool {
+	defer c.cacheMutex.Unlock()
+	c.cacheMutex.Lock()
 
-	_, hasKey := strCache.cache[str]
+	_, hasKey := c.cache[str]
 	return hasKey
 }
 
-func (strCache *StrThreadSafe) Count() int {
-	defer strCache.cacheMutex.Unlock()
-	strCache.cacheMutex.Lock()
+func (c *Str) Count() int {
+	defer c.cacheMutex.Unlock()
+	c.cacheMutex.Lock()
 
-	return len(strCache.cache)
+	return len(c.cache)
 }
