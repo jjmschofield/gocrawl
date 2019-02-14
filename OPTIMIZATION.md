@@ -421,3 +421,5 @@ We can use their List structure to build a queue or stack.  The list is marked a
 So first things first we will extend out a cache based on redis, we predicted this and left a clear extension point. Easy peasy.
 
 Altering the internals of the crawler is not quite so easy however... our crawler doesn't IoC the queue - so first things first we need to fix that.
+
+Now we go slower, quite a bit slower. Need to reduce number of caches (why 2)?

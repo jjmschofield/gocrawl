@@ -45,6 +45,7 @@ func (q *BasicQueue) Push(job WorkerJob) (err error) {
 	go func() {
 		q.counters.Queue.Add(1)
 		q.channels.Jobs <- job
+		q.counters.Queue.Sub(1)
 	}()
 
 	return nil

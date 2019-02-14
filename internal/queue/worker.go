@@ -28,7 +28,6 @@ type Worker struct {
 func (w *Worker) Start(chans Channels, qCounter *counters.AtomicInt64, workCounter *counters.AtomicInt64) {
 	for job := range chans.Jobs {
 		workCounter.Add(1)
-		qCounter.Sub(1)
 
 		page := pages.PageFromUrl(job.URL)
 
@@ -45,7 +44,7 @@ func (w *Worker) Start(chans Channels, qCounter *counters.AtomicInt64, workCount
 			Page:   page,
 		}
 
-		workCounter.Sub(1)
 		chans.Results <- workerResult
+		workCounter.Sub(1)
 	}
 }

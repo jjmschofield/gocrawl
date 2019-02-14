@@ -37,9 +37,9 @@ func Crawl(crawlUrl url.URL, workerCount int, outFilePath string, redisAddr stri
 	var crawler crawl.PageCrawler
 
 	if len(redisAddr) < 1 {
-		crawler = crawl.NewDefaultPageCrawler(workerCount, outFilePath)
+		crawler = crawl.NewDefaultPageCrawler(workerCount)
 	} else{
-		crawler = crawl.NewRedisPageCrawler(workerCount, outFilePath, redisAddr)
+		crawler = crawl.NewRedisPageCrawler(workerCount, redisAddr)
 	}
 
 	out := crawler.Crawl(crawlUrl)

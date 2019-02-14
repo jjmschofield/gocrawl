@@ -35,8 +35,7 @@ type Config struct {
 }
 
 type Caches struct {
-	Crawled  caches.ThreadSafeCache
-	Crawling caches.ThreadSafeCache
+	Closed caches.ThreadSafeCache
 }
 
 type Counters struct {
@@ -48,20 +47,18 @@ type Counters struct {
 }
 
 func (c *PageCrawler) Crawl(startUrl url.URL) chan pages.Page {
-	go c.start(startUrl)
+	results, _ := c.queue.Start(c.worker, c.Config.WorkerCount)
+
+	go c.enqueueUrl(startUrl)
+
+	go c.resultHandler(results)
+
 	return c.out
 }
 
-func (c *PageCrawler) start(startUrl url.URL) {
-	results, _ := c.queue.Start(c.worker, c.Config.WorkerCount)
-
-	c.enqueueUrl(startUrl)
-
+func (c *PageCrawler) resultHandler(results chan queue.WorkerResult) {
 	for result := range results {
 		c.enqueuePageGroup(result.Page.OutPages)
-
-		c.caches.Crawled.Add(result.Page.Id)
-		c.caches.Crawling.Remove(result.Page.Id)
 
 		c.out <- result.Page
 
@@ -84,11 +81,11 @@ func (c *PageCrawler) start(startUrl url.URL) {
 }
 
 func (c *PageCrawler) enqueueJob(job queue.WorkerJob) {
-	if !c.caches.Crawled.Has(job.Id) && !c.caches.Crawling.Has(job.Id) {
+	if !c.caches.Closed.Has(job.Id) {
 		c.Counters.Discovered.Add(1)
 		c.Counters.Crawling.Add(1)
 
-		c.caches.Crawling.Add(job.Id)
+		c.caches.Closed.Add(job.Id)
 
 		err := c.queue.Push(job)
 		if err != nil {
@@ -156,14 +153,12 @@ func NewPageCrawler(config Config) PageCrawler {
 	}
 }
 
-func NewDefaultPageCrawler(workerCount int, filePath string) PageCrawler {
-	crawledCache := caches.NewStr()
-	processingCache := caches.NewStr()
+func NewDefaultPageCrawler(workerCount int) PageCrawler {
+	closedCache := caches.NewStr()
 
 	config := Config{
 		Caches: Caches{
-			Crawled:  &crawledCache,
-			Crawling: &processingCache,
+			Closed:  &closedCache,
 		},
 		Worker:      &queue.Worker{Scraper: scrape.PageScraper{}},
 		WorkerCount: workerCount,
@@ -175,7 +170,7 @@ func NewDefaultPageCrawler(workerCount int, filePath string) PageCrawler {
 	return crawler
 }
 
-func NewRedisPageCrawler(workerCount int, filePath string, redisAddr string) PageCrawler {
+func NewRedisPageCrawler(workerCount int, redisAddr string) PageCrawler {
 	options := &redis.Options{
 		Addr:     redisAddr,
 		Password: "", // no password set
@@ -190,13 +185,11 @@ func NewRedisPageCrawler(workerCount int, filePath string, redisAddr string) Pag
 		panic(err)
 	}
 
-	crawledCache := caches.NewStrRedis("crawled", options)
-	processingCache := caches.NewStrRedis("processing", options)
+	closedCache := caches.NewStrRedis("crawled", options)
 
 	config := Config{
 		Caches: Caches{
-			Crawled:  &crawledCache,
-			Crawling: &processingCache,
+			Closed:  &closedCache,
 		},
 		Worker:      &queue.Worker{Scraper: scrape.PageScraper{}},
 		WorkerCount: workerCount,
