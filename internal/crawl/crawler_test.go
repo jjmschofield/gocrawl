@@ -58,7 +58,7 @@ var _ = Describe("PageCrawler", func() {
 			underTest.Crawl(*startUrl)
 		})
 
-		It("should wait until all discovered pages have been crawled before returning accurate counters", func() {
+		It("should wait until all discovered pages have been crawled before returning accurate Counters", func() {
 			// Arrange
 			expectedProcessing := 0
 			expectedCrawled := 2
@@ -152,7 +152,7 @@ var _ = Describe("PageCrawler", func() {
 
 				id, _ := pages.CalcPageId(*inProcessUrl)
 
-				config.Caches.Processing.Add(id)
+				config.Caches.Crawling.Add(id)
 
 				workerFake.StartStub = createWorkerStartStub(WorkerResult{
 					CrawledId: "3f1437859f73b447885255a95afa99a1",
@@ -181,8 +181,8 @@ var _ = Describe("NewPageCrawler", func() {
 
 		expected := Config{
 			Caches: Caches{
-				Crawled:    &crawledCache,
-				Processing: &processingCache,
+				Crawled:  &crawledCache,
+				Crawling: &processingCache,
 			},
 			Worker:      &Worker{Scraper: scrape.PageScraper{}},
 			WorkerCount: 10,
@@ -208,8 +208,8 @@ var _ = Describe("NewDefaultPageCrawler", func() {
 
 		expected := Config{
 			Caches: Caches{
-				Crawled:    &crawledCache,
-				Processing: &processingCache,
+				Crawled:  &crawledCache,
+				Crawling: &processingCache,
 			},
 			Worker:      &Worker{Scraper: scrape.PageScraper{}},
 			WorkerCount: expectedWorkerCount,
@@ -233,8 +233,8 @@ func createConfig() (config Config, workerFake *crawlfakes.FakeQueueWorker, writ
 
 	config = Config{
 		Caches: Caches{
-			Crawled:    &crawledCache,
-			Processing: &processingCache,
+			Crawled:  &crawledCache,
+			Crawling: &processingCache,
 		},
 		Worker:      workerFake,
 		WorkerCount: 1,

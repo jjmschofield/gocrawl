@@ -1,16 +1,15 @@
-package crawl
+package queue
 
 import (
 	"github.com/jjmschofield/gocrawl/internal/counters"
 	"github.com/jjmschofield/gocrawl/internal/pages"
 	"github.com/jjmschofield/gocrawl/internal/scrape"
 	"net/url"
-	"sync"
 )
 
 //go:generate counterfeiter . QueueWorker
 type QueueWorker interface {
-	Start(chans WorkerChannels, qCounter *counters.AtomicInt64, workCounter *counters.AtomicInt64, wg *sync.WaitGroup)
+	Start(chans Channels, qCounter *counters.AtomicInt64, workCounter *counters.AtomicInt64)
 }
 
 type WorkerJob struct {
@@ -19,28 +18,17 @@ type WorkerJob struct {
 }
 
 type WorkerResult struct {
-	CrawledId string
-	Result    scrape.Result
-}
-
-type WorkerChannels struct {
-	In    chan WorkerJob
-	Out   chan WorkerResult
-	Write chan pages.Page
+	Page   pages.Page
 }
 
 type Worker struct {
 	Scraper scrape.Scraper
 }
 
-// TODO - remove worker group
-// TODO - remove writer
-func (w *Worker) Start(chans WorkerChannels, queueCounter *counters.AtomicInt64, workCounter *counters.AtomicInt64, wg *sync.WaitGroup) {
-	defer wg.Done()
-
-	for job := range chans.In {
+func (w *Worker) Start(chans Channels, qCounter *counters.AtomicInt64, workCounter *counters.AtomicInt64) {
+	for job := range chans.Jobs {
 		workCounter.Add(1)
-		queueCounter.Sub(1)
+		qCounter.Sub(1)
 
 		page := pages.PageFromUrl(job.URL)
 
@@ -53,14 +41,11 @@ func (w *Worker) Start(chans WorkerChannels, queueCounter *counters.AtomicInt64,
 			page.OutPages = scrapeResult.OutPages
 		}
 
-		chans.Write <- page
-
 		workerResult := WorkerResult{
-			CrawledId: page.Id,
-			Result:    scrapeResult,
+			Page:   page,
 		}
 
 		workCounter.Sub(1)
-		chans.Out <- workerResult
+		chans.Results <- workerResult
 	}
 }

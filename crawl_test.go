@@ -20,8 +20,8 @@ var _ = Describe("crawl", func() {
 		Expect(counters.Discovered.Count()).To(BeNumerically(">", 1))
 
 		b.RecordValue("pages discovered", float64(counters.Discovered.Count()))
-		b.RecordValue("pages crawled", float64(counters.CrawlComplete.Count()))
-		b.RecordValue("queue peak", float64(counters.CrawlsQueued.Peak()))
-		b.RecordValue("parallel scrape peak", float64(counters.Crawling.Peak()))
+		b.RecordValue("pages crawled", float64(counters.Crawled.Count()))
+		b.RecordValue("queue peak", float64(counters.Queued.Peak()))
+		b.RecordValue("parallel scrape peak", float64(counters.Scraping.Peak()))
 	}, 3)
 })

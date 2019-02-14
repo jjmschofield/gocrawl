@@ -2,7 +2,7 @@ package queue
 
 import (
 	"errors"
-	"github.com/jjmschofield/gocrawl/internal/crawl"
+	"github.com/jjmschofield/gocrawl/internal/counters"
 )
 
 type BasicQueue struct {
@@ -10,42 +10,46 @@ type BasicQueue struct {
 	counters Counters
 }
 
-func NewBasicQueue() (queue *BasicQueue, err error) {
-	return &BasicQueue{}, nil
+func NewBasicQueue() (queue *BasicQueue) {
+	return &BasicQueue{
+		counters: Counters{
+			Work:  &counters.AtomicInt64{},
+			Queue: &counters.AtomicInt64{},
+		},
+	}
 }
 
-func (q *BasicQueue) Start(worker crawl.QueueWorker, workerCount int) (results *chan crawl.WorkerResult, err error) {
+func (q *BasicQueue) Start(worker QueueWorker, workerCount int) (results chan WorkerResult, err error) {
 	q.channels = Channels{
-		jobs:    make(chan crawl.WorkerJob),
-		Results: make(chan crawl.WorkerResult),
+		Jobs:    make(chan WorkerJob),
+		Results: make(chan WorkerResult),
 	}
 
 	for i := 0; i < workerCount; i++ {
-		go worker.Start(q.channels, &q.counters.Queue, &q.counters.Work)
+		go worker.Start(q.channels, q.counters.Queue, q.counters.Work)
 	}
 
-	return &q.channels.Results, nil
+	return q.channels.Results, nil
 }
 
-func (q *BasicQueue) Stop() (err error) {
+func (q *BasicQueue) Stop() {
 	close(q.channels.Results)
-	close(q.channels.jobs)
-	return nil
+	close(q.channels.Jobs)
 }
 
-func (q *BasicQueue) Push(job crawl.WorkerJob) (err error) {
-	if q.channels.jobs == nil || q.channels.Results == nil  {
-		return errors.New("queues are not open for use")
+func (q *BasicQueue) Push(job WorkerJob) (err error) {
+	if q.channels.Jobs == nil || q.channels.Results == nil {
+		return errors.New("cannot push to queue, channels are not open for use")
 	}
 
 	go func() {
 		q.counters.Queue.Add(1)
-		q.channels.jobs <- job
+		q.channels.Jobs <- job
 	}()
 
 	return nil
 }
 
-func (q *BasicQueue) Counters() *Counters {
-	return &q.counters
+func (q *BasicQueue) Counters() Counters {
+	return q.counters
 }

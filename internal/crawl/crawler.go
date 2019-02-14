@@ -5,11 +5,10 @@ import (
 	"github.com/jjmschofield/gocrawl/internal/caches"
 	"github.com/jjmschofield/gocrawl/internal/counters"
 	"github.com/jjmschofield/gocrawl/internal/pages"
+	"github.com/jjmschofield/gocrawl/internal/queue"
 	"github.com/jjmschofield/gocrawl/internal/scrape"
-	"github.com/jjmschofield/gocrawl/internal/writers"
 	"log"
 	"net/url"
-	"sync"
 )
 
 //go:generate counterfeiter . Crawler
@@ -19,93 +18,81 @@ type Crawler interface {
 
 type PageCrawler struct {
 	Config   Config
+	Counters Counters
 	caches   Caches
-	channels WorkerChannels
-	counters Counters
+	out      chan pages.Page
+	queue    queue.Queue
 	scraper  scrape.Scraper
-	worker   QueueWorker
-	writer   writers.Writer
+	worker   queue.QueueWorker
 }
 
 type Config struct {
 	Caches      Caches
-	WorkerCount int
+	Queue       queue.Queue
 	Scraper     scrape.Scraper
-	Worker      QueueWorker
-	Writer      writers.Writer
+	Worker      queue.QueueWorker
+	WorkerCount int
 }
 
 type Caches struct {
-	Processing caches.ThreadSafeCache
-	Crawled    caches.ThreadSafeCache
+	Crawled  caches.ThreadSafeCache
+	Crawling caches.ThreadSafeCache
 }
 
 type Counters struct {
-	Discovered    counters.AtomicInt64 // Pages discovered so far
-	Processing    counters.AtomicInt64 // Pages that we need to complete processing
-	Crawling      counters.AtomicInt64 // Pages that we are currently crawling
-	CrawlComplete counters.AtomicInt64 // Pages that we have CrawledId
-	CrawlsQueued  counters.AtomicInt64 // Pages currently queued for crawling
+	Discovered counters.AtomicInt64 // Pages discovered so far
+	Crawled    counters.AtomicInt64 // Pages that we have Crawled
+	Crawling   counters.AtomicInt64 // Pages that we have either in queue or are being scraped
+	Queued     *counters.AtomicInt64 // Pages currently queued for crawling
+	Scraping   *counters.AtomicInt64 // Pages that we are actively being crawled right now crawling
 }
 
-func (c *PageCrawler) Crawl(startUrl url.URL) Counters {
-	var wg sync.WaitGroup
+func (c *PageCrawler) Crawl(startUrl url.URL) chan pages.Page {
+	go c.start(startUrl)
+	return c.out
+}
 
-	go c.writer.Start(c.channels.Write)
-
-	go c.resultReceiver()
-
-	c.startWorkers(c.Config.WorkerCount, &wg)
+func (c *PageCrawler) start(startUrl url.URL) {
+	results, _ := c.queue.Start(c.worker, c.Config.WorkerCount)
 
 	c.enqueueUrl(startUrl)
 
-	wg.Wait()
+	for result := range results {
+		c.enqueuePageGroup(result.Page.OutPages)
 
-	return c.counters
-}
+		c.caches.Crawled.Add(result.Page.Id)
+		c.caches.Crawling.Remove(result.Page.Id)
 
-func (c *PageCrawler) startWorkers(workerCount int, wg *sync.WaitGroup) {
-	wg.Add(workerCount)
-	for i := 0; i < c.Config.WorkerCount; i++ {
-		go c.worker.Start(c.channels, &c.counters.CrawlsQueued, &c.counters.Crawling, wg)
-	}
-}
+		c.out <- result.Page
 
-func (c *PageCrawler) enqueueJob(job WorkerJob) {
-	if !c.caches.Crawled.Has(job.Id) && !c.caches.Processing.Has(job.Id) {
-		c.counters.Processing.Add(1)
-		c.counters.Discovered.Add(1)
-
-		c.caches.Processing.Add(job.Id)
-
-		go func() {
-			c.counters.CrawlsQueued.Add(1)
-			c.channels.In <- job
-		}()
-	}
-}
-
-func (c *PageCrawler) resultReceiver() {
-	for result := range c.channels.Out {
-		c.caches.Crawled.Add(result.CrawledId)
-		c.counters.CrawlComplete.Add(1)
-
-		c.enqueuePageGroup(result.Result.OutPages)
-
-		c.counters.Processing.Sub(1)
-		c.caches.Processing.Remove(result.CrawledId)
+		c.Counters.Crawled.Add(1)
+		c.Counters.Crawling.Sub(1)
 
 		log.Printf(
-			"Crawled %s Discovered: %v, Processing: %v, In Scrape Queue: %v, Scraping: %v, Scrape Complete: %v",
-			result.CrawledId,
-			c.counters.Discovered.Count(),
-			c.counters.Processing.Count(),
-			c.counters.CrawlsQueued.Count(),
-			c.counters.Crawling.Count(),
-			c.counters.CrawlComplete.Count())
+			"Crawled %s Discovered: %v, Scraping: %v, In Queue: %v, Scraping: %v, Crawled: %v",
+			result.Page.Id,
+			c.Counters.Discovered.Count(),
+			c.Counters.Crawling.Count(),
+			c.Counters.Queued.Count(),
+			c.Counters.Scraping.Count(),
+			c.Counters.Crawled.Count())
 
 		if !c.hasWorkRemaining() {
-			c.closeChannels()
+			c.close()
+		}
+	}
+}
+
+func (c *PageCrawler) enqueueJob(job queue.WorkerJob) {
+	if !c.caches.Crawled.Has(job.Id) && !c.caches.Crawling.Has(job.Id) {
+		c.Counters.Discovered.Add(1)
+		c.Counters.Crawling.Add(1)
+
+		c.caches.Crawling.Add(job.Id)
+
+		err := c.queue.Push(job)
+		if err != nil {
+			log.Panic(err)
 		}
 	}
 }
@@ -113,7 +100,7 @@ func (c *PageCrawler) resultReceiver() {
 func (c *PageCrawler) enqueueUrl(srcUrl url.URL) {
 	pageId, normalizedUrl := pages.CalcPageId(srcUrl)
 
-	job := WorkerJob{
+	job := queue.WorkerJob{
 		Id:  pageId,
 		URL: normalizedUrl,
 	}
@@ -125,7 +112,7 @@ func (c *PageCrawler) enqueuePageGroup(pageGroup pages.PageGroup) {
 	for pageId, href := range pageGroup.Internal {
 		pageUrl, _ := url.Parse(href)
 
-		job := WorkerJob{
+		job := queue.WorkerJob{
 			Id:  pageId,
 			URL: *pageUrl,
 		}
@@ -135,38 +122,37 @@ func (c *PageCrawler) enqueuePageGroup(pageGroup pages.PageGroup) {
 }
 
 func (c *PageCrawler) hasWorkRemaining() bool {
-	if c.counters.Processing.Count() > 0 {
+	if c.Counters.Crawling.Count() > 0 {
 		return true
 	}
 
-	if c.counters.CrawlsQueued.Count() > 0 {
+	if c.Counters.Queued.Count() > 0 {
 		return true
 	}
 
-	if c.counters.Crawling.Count() > 0 {
+	if c.Counters.Scraping.Count() > 0 {
 		return true
 	}
 
 	return false
 }
 
-func (c *PageCrawler) closeChannels() {
-	close(c.channels.In)
-	close(c.channels.Out)
-	close(c.channels.Write)
+func (c *PageCrawler) close() {
+	c.queue.Stop()
+	close(c.out)
 }
 
 func NewPageCrawler(config Config) PageCrawler {
 	return PageCrawler{
-		Config: config,
 		caches: config.Caches,
-		channels: WorkerChannels{
-			In:    make(chan WorkerJob),
-			Out:   make(chan WorkerResult),
-			Write: make(chan pages.Page),
+		Config: config,
+		Counters: Counters{
+			Scraping: config.Queue.Counters().Work,
+			Queued:   config.Queue.Counters().Queue,
 		},
+		out:    make(chan pages.Page),
+		queue:  config.Queue,
 		worker: config.Worker,
-		writer: config.Writer,
 	}
 }
 
@@ -176,12 +162,12 @@ func NewDefaultPageCrawler(workerCount int, filePath string) PageCrawler {
 
 	config := Config{
 		Caches: Caches{
-			Crawled:    &crawledCache,
-			Processing: &processingCache,
+			Crawled:  &crawledCache,
+			Crawling: &processingCache,
 		},
-		Worker:      &Worker{Scraper: scrape.PageScraper{}},
+		Worker:      &queue.Worker{Scraper: scrape.PageScraper{}},
 		WorkerCount: workerCount,
-		Writer:      &writers.FileWriter{FilePath: filePath},
+		Queue:       queue.NewBasicQueue(),
 	}
 
 	crawler := NewPageCrawler(config)
@@ -209,16 +195,15 @@ func NewRedisPageCrawler(workerCount int, filePath string, redisAddr string) Pag
 
 	config := Config{
 		Caches: Caches{
-			Crawled:    &crawledCache,
-			Processing: &processingCache,
+			Crawled:  &crawledCache,
+			Crawling: &processingCache,
 		},
-		Worker:      &Worker{Scraper: scrape.PageScraper{}},
+		Worker:      &queue.Worker{Scraper: scrape.PageScraper{}},
 		WorkerCount: workerCount,
-		Writer:      &writers.FileWriter{FilePath: filePath},
+		Queue:       queue.NewBasicQueue(),
 	}
 
 	crawler := NewPageCrawler(config)
 
 	return crawler
 }
-

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/jjmschofield/gocrawl/internal/crawl"
+	"github.com/jjmschofield/gocrawl/internal/writers"
 	"log"
 	"net/url"
 	"time"
@@ -29,7 +30,7 @@ func main() {
 	end := time.Now()
 
 	fmt.Printf("Scrape Completed in %v ms \n", (end.UnixNano()-start.UnixNano())/int64(time.Millisecond))
-	fmt.Printf(" Discovered: %v, \n Crawled: %v \n Parallel Crawls Peak: %v \n Scrape Queue Peak: %v \n Processing Peak: %v \n", counters.Discovered.Count(), counters.CrawlComplete.Count(), counters.Crawling.Peak(), counters.CrawlsQueued.Peak(), counters.Processing.Peak())
+	fmt.Printf(" Discovered: %v, \n Crawled: %v \n Parallel Crawls Peak: %v \n Scrape Queue Peak: %v \n Scraping Peak: %v \n", counters.Discovered.Count(), counters.Crawled.Count(), counters.Scraping.Peak(), counters.Queued.Peak(), counters.Crawling.Peak())
 }
 
 func Crawl(crawlUrl url.URL, workerCount int, outFilePath string, redisAddr string) crawl.Counters {
@@ -41,6 +42,11 @@ func Crawl(crawlUrl url.URL, workerCount int, outFilePath string, redisAddr stri
 		crawler = crawl.NewRedisPageCrawler(workerCount, outFilePath, redisAddr)
 	}
 
-	counters := crawler.Crawl(crawlUrl)
-	return counters
+	out := crawler.Crawl(crawlUrl)
+
+	writer := writers.FileWriter{FilePath: outFilePath}
+
+	writer.Start(out)
+
+	return crawler.Counters
 }

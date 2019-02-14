@@ -2,7 +2,6 @@ package queue
 
 import (
 	"errors"
-	"github.com/jjmschofield/gocrawl/internal/crawl"
 )
 
 type ReddisQueue struct {
@@ -18,17 +17,17 @@ func NewReddisQueue() (queue *ReddisQueue, err error) {
 	return &ReddisQueue{}, nil
 }
 
-func (q *ReddisQueue) Start(worker crawl.QueueWorker, workerCount int) (results *chan crawl.WorkerResult, err error) {
+func (q *ReddisQueue) Start(worker QueueWorker, workerCount int) (results *chan WorkerResult, err error) {
 	// Connect to redis
 	// save client
 
 	q.channels = Channels{
-		jobs:    make(chan crawl.WorkerJob),
-		Results: make(chan crawl.WorkerResult),
+		Jobs:    make(chan WorkerJob),
+		Results: make(chan WorkerResult),
 	}
 
 	for i := 0; i < workerCount; i++ {
-		go worker.Start(q.channels, &q.counters.Queue, &q.counters.Work)
+		go worker.Start(q.channels, q.counters.Queue, q.counters.Work)
 	}
 
 	go q.pollForJobs()
@@ -36,17 +35,16 @@ func (q *ReddisQueue) Start(worker crawl.QueueWorker, workerCount int) (results 
 	return &q.channels.Results, nil
 }
 
-func (q *ReddisQueue) Stop() (err error) {
+func (q *ReddisQueue) Stop(){
 	// set running false
 	close(q.channels.Results)
-	close(q.channels.jobs)
-	return nil
+	close(q.channels.Jobs)
 }
 
-func (q *ReddisQueue) Push(job crawl.WorkerJob) (err error) {
+func (q *ReddisQueue) Push(job WorkerJob) (err error) {
 	// if running instead
 
-	if q.channels.jobs == nil || q.channels.Results == nil  {
+	if q.channels.Jobs == nil || q.channels.Results == nil  {
 		return errors.New("queues are not open for use")
 	}
 
@@ -64,7 +62,7 @@ func (q *ReddisQueue) pollForJobs(){
 	// While we are open
 	// Poll redis
 	// Pop job
-	// Push jobs into jobs channel
+	// Push Jobs into Jobs channel
 	// Block when there are not enough workers
 	// close client
 }

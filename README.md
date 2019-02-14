@@ -344,9 +344,7 @@ By default we have provided an example of a redis cache (unauthenticated) which 
 
 Our JSONL format is pretty handy - even for big files we should hopefully be able to go line by line and stream it into something else. 
 
-You can take this approach by creating a parser, but if you want to go really big your can create your own [Writer](internal/writers/writer.go) and inject it into the [PageCrawler](internal/crawl/crawler.go). 
-
-Each crawl worker intentionally writes out before going back to the queue, so you can get as much concurrency your store supports. 
+You can take this approach by creating a parser, but if you want to go really big your can create your own [Writer](internal/writers/writer.go) which simply ranges over the out channel of [PageCrawler](internal/crawl/crawler.go). The crawler fans in at this stage - so it's up to you whether you want the writer to block the crawl. 
 
 You **should** only get unique pages once - but it's not guaranteed. ID's are deterministic (md5 hashes of normalized page urls) so with a huge data set you may well get a collision. If you do, or you have a better idea for a fast hashing algo that gives us a relatively small and consistently sized has let me know (I'm sure there are many)!
   
