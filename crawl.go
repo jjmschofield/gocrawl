@@ -30,7 +30,7 @@ func main() {
 	end := time.Now()
 
 	fmt.Printf("Scrape Completed in %v ms \n", (end.UnixNano()-start.UnixNano())/int64(time.Millisecond))
-	fmt.Printf(" Discovered: %v, \n Crawled: %v \n Parallel Crawls Peak: %v \n Scrape Queue Peak: %v \n Scraping Peak: %v \n", counters.Discovered.Count(), counters.Crawled.Count(), counters.Scraping.Peak(), counters.Queued.Peak(), counters.Crawling.Peak())
+	fmt.Printf(" Discovered: %v, \n Crawled: %v \n Parallel Scrape Peak: %v \n Queue Peak: %v \n Crawling Peak: %v \n", counters.Discovered.Count(), counters.Crawled.Count(), counters.Scraping.Peak(), counters.Queued.Peak(), counters.Crawling.Peak())
 }
 
 func Crawl(crawlUrl url.URL, workerCount int, outFilePath string, redisAddr string) crawl.Counters {

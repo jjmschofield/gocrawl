@@ -66,7 +66,7 @@ func (c *PageCrawler) resultHandler(results chan queue.WorkerResult) {
 		c.Counters.Crawling.Sub(1)
 
 		log.Printf(
-			"Crawled %s Discovered: %v, Scraping: %v, In Queue: %v, Scraping: %v, Crawled: %v",
+			"Crawled %s Discovered: %v, Crawling: %v, Queued: %v, Scraping: %v, Crawled: %v",
 			result.Page.Id,
 			c.Counters.Discovered.Count(),
 			c.Counters.Crawling.Count(),
